@@ -10,6 +10,7 @@ import {
   ScrollView,
 } from "react-native";
 import { useAuth } from "../src/hook/authContext";
+import { API_URL } from "@env";
 
 const EditProfileScreen = ({ navigation }) => {
   const [username, setUsername] = useState("");
@@ -18,7 +19,7 @@ const EditProfileScreen = ({ navigation }) => {
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const { user, setUser } = useAuth();
-  const API_URL = process.env.API_URL;
+  // const API_URL = process.env.API_URL;
   useEffect(() => {
     if (user) {
       setUsername(user?.username);
@@ -29,9 +30,10 @@ const EditProfileScreen = ({ navigation }) => {
     }
   }, []);
   const handleSendOTP = async () => {
+    console.log("Current API URL:", API_URL);
     try {
       const response = await fetch(
-        `${API_URL}/user/editProfileSendOTP?email=${encodeURIComponent(
+        `${API_URL}/user/sendOTP?email=${encodeURIComponent(
           email
         )}&action=EditAccount`,
         {
@@ -132,5 +134,3 @@ const EditProfileScreen = ({ navigation }) => {
     </ScrollView>
   );
 };
-
-export default EditProfileScreen;

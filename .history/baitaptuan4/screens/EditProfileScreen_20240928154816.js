@@ -31,7 +31,7 @@ const EditProfileScreen = ({ navigation }) => {
   const handleSendOTP = async () => {
     try {
       const response = await fetch(
-        `${API_URL}/user/editProfileSendOTP?email=${encodeURIComponent(
+        `${API_URL}/user/sendOTP?email=${encodeURIComponent(
           email
         )}&action=EditAccount`,
         {

@@ -345,13 +345,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
   },
-  containernoUser: {
-    flex: 1,
-    backgroundColor: "#fff",
-    padding: 20,
-    justifyContent: "center", // Center nội dung khi không có user
-    alignItems: "center", // Center nội dung khi không có user
-  },
+  containernoUser: {},
   noUserText: {
     fontSize: 20,
     fontWeight: "bold",
