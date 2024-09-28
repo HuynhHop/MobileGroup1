@@ -17,7 +17,6 @@ import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "../hook/authContext"; // Ensure your context provides 'logout'
-import { API_URL } from "@env";
 
 const CustomDrawer = (props) => {
   const { user, setIsAuthenticated, setUser } = useAuth(); // Use logout directly

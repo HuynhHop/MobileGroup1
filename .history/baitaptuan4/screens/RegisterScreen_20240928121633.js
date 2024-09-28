@@ -7,7 +7,6 @@ import {
   Alert,
   ScrollView,
 } from "react-native";
-import { API_URL } from "@env";
 
 const RequiredInput = ({
   label,
@@ -58,7 +57,7 @@ export default function RegisterScreen({ navigation }) {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
-  // const API_URL = process.env.API_URL;
+  const API_URL = process.env.API_URL;
 
   const handleSendOTP = async () => {
     if (password !== confirmPassword) {

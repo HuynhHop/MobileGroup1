@@ -299,7 +299,6 @@ class UserController {
       // Tạo tài khoản thì ms cần check email exist để loại
       if (action === "CreateAccount") {
         if (user) throw new Error("User existed !!!");
-        let user_with_userName = await User.findOne({ email });
       }
       let otp_code = Math.floor(100000 + Math.random() * 900000);
       otp_code = otp_code.toString();

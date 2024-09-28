@@ -9,7 +9,6 @@ import {
   Alert,
 } from "react-native";
 import { useAuth } from "../src/hook/authContext";
-import { API_URL } from "@env";
 
 export default function OTPScreen({ route, navigation }) {
   const { otp_code, action, username, password, email, fullname, phone } =
@@ -19,8 +18,6 @@ export default function OTPScreen({ route, navigation }) {
   const [isLoading, setIsLoading] = useState(false);
   // const API_URL = process.env.API_URL;
   const handleActionWithOTP = async () => {
-    console.log("Current API URL:", API_URL);
-
     if (otp !== otp_code) {
       Alert.alert("Error", "OTP do not match");
       return;

@@ -30,7 +30,6 @@ const EditProfileScreen = ({ navigation }) => {
     }
   }, []);
   const handleSendOTP = async () => {
-    console.log("Current API URL:", API_URL);
     try {
       const response = await fetch(
         `${API_URL}/user/sendOTP?email=${encodeURIComponent(

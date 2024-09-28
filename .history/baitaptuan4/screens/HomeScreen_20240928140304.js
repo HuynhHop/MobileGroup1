@@ -24,7 +24,7 @@ const HomeScreen = ({ navigation }) => {
     useAuth();
   const scrollViewRef = useRef();
   const [showButton, setShowButton] = useState(false);
-  // const API_URL = process.env.API_URL;
+  const API_URL = process.env.API_URL;
 
   useEffect(() => {
     console.log("Current API URL:", API_URL);

@@ -15,7 +15,7 @@ mongoose.plugin(mongooseSlugUpdater);
 const userSchema = new Schema(
   {
     _id: { type: Number },
-    username: { type: String, maxLength: 255, required: true, unique: true },
+    username: { type: String, maxLength: 255, required: true },
     password: { type: String, required: true },
     fullname: { type: String, maxLength: 255, required: true },
     // email: { type: String, maxLength: 255, required: true, unique: true },

@@ -15,7 +15,6 @@ import debounce from "lodash.debounce";
 import { useAuth } from "../src/hook/authContext";
 import BannerSlider from "../src/components/BannerSlider";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { API_URL } from "@env";
 const HomeScreen = ({ navigation }) => {
   const [products, setProducts] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -24,7 +23,7 @@ const HomeScreen = ({ navigation }) => {
     useAuth();
   const scrollViewRef = useRef();
   const [showButton, setShowButton] = useState(false);
-  // const API_URL = process.env.API_URL;
+  const API_URL = process.env.API_URL;
 
   useEffect(() => {
     console.log("Current API URL:", API_URL);

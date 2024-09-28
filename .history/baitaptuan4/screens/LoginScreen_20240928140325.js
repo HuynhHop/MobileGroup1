@@ -20,7 +20,7 @@ export default function LoginScreen({ navigation }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const { setUser, setIsAuthenticated, login } = useAuth();
-  // const API_URL = process.env.API_URL;
+  const API_URL = process.env.API_URL;
 
   const handleLogin = async () => {
     console.log("Current API URL:", API_URL);

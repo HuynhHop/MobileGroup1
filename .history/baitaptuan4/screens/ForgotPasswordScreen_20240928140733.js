@@ -11,10 +11,8 @@ import { API_URL } from "@env";
 
 export default function ForgotPasswordScreen({ navigation }) {
   const [email, setEmail] = useState("");
-  // const API_URL = process.env.API_URL;
+  const API_URL = process.env.API_URL;
   const handleForgotPassword = async () => {
-    console.log("Current API URL:", API_URL);
-
     if (!email) {
       Alert.alert("Error", "Please enter your email");
       return;
