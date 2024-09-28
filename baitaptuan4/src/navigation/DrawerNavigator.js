@@ -5,6 +5,7 @@ import EditProfileScreen from "../../screens/EditProfileScreen";
 import CustomDrawer from "../components/CustomDrawer";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import TabNavigator from "./TabNavigator";
+import CartScreen from "../../screens/CartScreen";
 
 import { useAuth } from "../hook/authContext";
 const Drawer = createDrawerNavigator();
@@ -54,6 +55,16 @@ export default function DrawerNavigator() {
             options={{
               drawerIcon: ({ color }) => (
                 <Ionicons name="person-outline" size={22} color={color} />
+              ),
+            }}
+          />
+
+          <Drawer.Screen
+            name="Cart"
+            component={CartScreen}
+            options={{
+              drawerIcon: ({ color }) => (
+                <Ionicons name="cart-outline" size={22} color={color} />
               ),
             }}
           />
