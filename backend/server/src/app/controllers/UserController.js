@@ -286,20 +286,26 @@ class UserController {
     }
   }
 
-  //[GET] /sendOTP/
+  //[POST] /sendOTP/
   async sendOTP(req, res, next) {
     try {
       const { email, action } = req.query;
-
+      const { username, phone } = req.body;
       if (!email)
         return res
           .status(400)
           .json({ success: false, message: "Missing inputs" });
       let user = await User.findOne({ email });
+      let name = await User.findOne({ username });
+      let Phone = await User.findOne({ phone });
       // Tạo tài khoản thì ms cần check email exist để loại
-      if (action === "CreateAccount") {
+      if (action === "CreateAccount"){
+        if (!phone || phone.length !== 10 || isNaN(phone)) {
+          throw new Error("Valid phone number !!!");
+        }
         if (user) throw new Error("User existed !!!");
-        let user_with_userName = await User.findOne({ email });
+        if (name) throw new Error("Username existed !!!");
+        if (Phone) throw new Error("Phone existed !!!");
       }
       let otp_code = Math.floor(100000 + Math.random() * 900000);
       otp_code = otp_code.toString();
@@ -365,13 +371,13 @@ class UserController {
   //[GET] /editProfileSendOTP/
   async editProfileSendOTP(req, res, next) {
     try {
-      const { email } = req.query;
+      const { email, action } = req.query;
       if (!email)
         return res
           .status(400)
           .json({ success: false, message: "Missing inputs" });
       let user = await User.findOne({ email });
-      if (user) throw new Error("User existed !!!");
+      if (!user) throw new Error("User not existed !!!");
       let otp_code = Math.floor(100000 + Math.random() * 900000);
       otp_code = otp_code.toString();
       const html = `<!DOCTYPE html>
@@ -427,8 +433,8 @@ class UserController {
         email,
         html,
       };
-      const result = await sendMail("Edit Account", data);
-      res.status(200).json({ success: true, result, otp_code });
+      const result = await sendMail(action, data);
+      res.status(200).json({ success: true, result, otp_code, action });
     } catch (error) {
       next(error);
     }

@@ -39,7 +39,7 @@ const BannerSlider = ({ products, navigation }) => {
       showsHorizontalScrollIndicator={false}
       renderItem={({ item }) => (
         <TouchableOpacity
-        //onPress={() => navigation.navigate("ProductDetail", { id: item._id })}
+          onPress={() => navigation.navigate("BookDetail", { product: item })}
         >
           <Image source={{ uri: item.imageUrl }} style={styles.productImage} />
         </TouchableOpacity>
