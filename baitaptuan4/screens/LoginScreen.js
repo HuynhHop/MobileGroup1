@@ -206,11 +206,11 @@ export default function LoginScreen({ navigation }) {
         ]);
       } else {
         Alert.alert("Error", data.message || "Login failed");
-        console.log("aaaaa");
+        // console.log("aaaaa");
       }
     } catch (error) {
       Alert.alert("Error", error.message || "Something went wrong");
-      console.log("aaaaa");
+      // console.log("aaaaa");
     }
   };
 

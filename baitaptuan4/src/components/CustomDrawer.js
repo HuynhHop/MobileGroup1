@@ -53,6 +53,7 @@ const CustomDrawer = (props) => {
         // logout();
       } else {
         Alert.alert("Error", "Logout failed");
+        console.log("aa")
       }
     } catch (error) {
       Alert.alert("Error", "Something went wrong");

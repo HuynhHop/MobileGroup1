@@ -130,6 +130,7 @@ const HomeScreen = ({ navigation }) => {
       } catch (error) {
         console.error("Error fetching search results", error);
         setProducts([]); // Clear products on error
+        console.log("aa")
       }
     }, 500),
     []
