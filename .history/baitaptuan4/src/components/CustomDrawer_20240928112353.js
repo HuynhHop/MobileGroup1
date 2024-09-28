@@ -19,7 +19,7 @@ import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "../hook/authContext"; // Ensure your context provides 'logout'
 
 const CustomDrawer = (props) => {
-  const { user, setIsAuthenticated, setUser } = useAuth(); // Use logout directly
+  const { user, logout, setIsAuthenticated, setUser } = useAuth(); // Use logout directly
   const navigation = useNavigation();
 
   const handleLogout = async () => {
@@ -50,8 +50,11 @@ const CustomDrawer = (props) => {
           },
         ]);
         setUser(null);
+        console.log(1211);
+        // logout();
       } else {
         Alert.alert("Error", "Logout failed");
+        console.log("aa");
       }
     } catch (error) {
       Alert.alert("Error", "Something went wrong");

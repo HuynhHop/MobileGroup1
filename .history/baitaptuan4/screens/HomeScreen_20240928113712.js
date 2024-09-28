@@ -25,7 +25,7 @@ const HomeScreen = ({ navigation }) => {
   const [showButton, setShowButton] = useState(false);
   const API_URL = process.env.API_URL;
   useEffect(() => {
-    console.log("Current API URL:", API_URL);
+    console.log(API_URL);
     const checkAuthStatus = async () => {
       const accessToken = await AsyncStorage.getItem("@accessToken");
       console.log("token : ", accessToken);

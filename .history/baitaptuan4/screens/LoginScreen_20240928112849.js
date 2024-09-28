@@ -174,9 +174,8 @@ export default function LoginScreen({ navigation }) {
   const [password, setPassword] = useState("");
   const { setUser, setIsAuthenticated, login } = useAuth();
   const API_URL = process.env.API_URL;
-
+  console.log(API_URL);
   const handleLogin = async () => {
-    console.log("Current API URL:", API_URL);
     // Kiểm tra nếu username hoặc password bị trống
     if (!username || !password) {
       Alert.alert("Error", "Please enter both username and password");
@@ -207,9 +206,11 @@ export default function LoginScreen({ navigation }) {
         ]);
       } else {
         Alert.alert("Error", data.message || "Login failed");
+        // console.log("aaaaa");
       }
     } catch (error) {
       Alert.alert("Error", error.message || "Something went wrong");
+      // console.log("aaaaa");
     }
   };
 

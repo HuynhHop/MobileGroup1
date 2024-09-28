@@ -24,14 +24,13 @@ const HomeScreen = ({ navigation }) => {
   const scrollViewRef = useRef();
   const [showButton, setShowButton] = useState(false);
   const API_URL = process.env.API_URL;
+  console.log(API_URL);
   useEffect(() => {
-    console.log("Current API URL:", API_URL);
     const checkAuthStatus = async () => {
       const accessToken = await AsyncStorage.getItem("@accessToken");
       console.log("token : ", accessToken);
       console.log(isAuthenticated);
       if (accessToken) {
-        setIsAuthenticated(true);
         try {
           // Gọi API
           const response = await fetch(`${API_URL}/user/byToken`, {
@@ -57,6 +56,7 @@ const HomeScreen = ({ navigation }) => {
         } catch (error) {
           console.error("Error fetching user data", error);
         }
+        setIsAuthenticated(true);
       } else {
         setIsAuthenticated(false);
       }
