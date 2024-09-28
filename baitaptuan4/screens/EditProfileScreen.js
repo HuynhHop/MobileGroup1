@@ -33,7 +33,7 @@ const EditProfileScreen = ({ navigation }) => {
     console.log("Current API URL:", API_URL);
     try {
       const response = await fetch(
-        `${API_URL}/user/sendOTP?email=${encodeURIComponent(
+        `${API_URL}/user/editProfileSendOTP?email=${encodeURIComponent(
           email
         )}&action=EditAccount`,
         {

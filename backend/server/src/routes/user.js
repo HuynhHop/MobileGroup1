@@ -7,7 +7,7 @@ router.get("/byToken", verifyAccessToken, userController.getUserFromToken);
 router.get("/logout", verifyAccessToken, userController.logout);
 router.get("/forgotPassword", userController.forgotPassword);
 router.get("/editProfileSendOTP", userController.editProfileSendOTP);
-router.get("/sendOTP", userController.sendOTP);
+router.post("/sendOTP", userController.sendOTP);
 router.get("/resetPassword/:resetToken", userController.getResetToken);
 router.get("/:id", userController.getById);
 router.get("/", [verifyAccessToken, isAdmin], userController.getAll);
