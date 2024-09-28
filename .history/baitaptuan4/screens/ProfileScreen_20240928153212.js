@@ -166,7 +166,7 @@ const ProfileScreen = () => {
   if (!user) {
     // Nếu user là null hoặc undefined, hiển thị thông báo và button
     return (
-      <View style={styles.containernoUser}>
+      <View style={styles.container - noUser}>
         <Text style={styles.noUserText}>User not logged in</Text>
         <TouchableOpacity
           style={styles.loginButton}
@@ -345,18 +345,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
   },
-  containernoUser: {
-    flex: 1,
-    backgroundColor: "#fff",
-    padding: 20,
-    justifyContent: "center", // Center nội dung khi không có user
-    alignItems: "center", // Center nội dung khi không có user
-  },
-  noUserText: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 20,
-    color: "#FF0000", // Màu đỏ để nhấn mạnh
-  },
+  containernoUser: {},
 });
 export default ProfileScreen;

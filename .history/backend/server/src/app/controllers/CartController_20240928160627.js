@@ -37,11 +37,10 @@ class CartController {
       let cart = await Cart.findOne({ user: userId }).populate({
         path: "items",
         populate: {
-          path: "product", // Populate để lấy thông tin chi tiết của sản phẩm
-          select: "name price", // Chỉ lấy giá của sản phẩm
+          path: "product",
+          model: "Product",
         },
       });
-
       if (!cart) {
         return res
           .status(404)

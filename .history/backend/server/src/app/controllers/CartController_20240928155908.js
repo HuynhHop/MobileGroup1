@@ -8,13 +8,7 @@ class CartController {
   async getCart(req, res) {
     try {
       const userId = req.user._id;
-      const cart = await Cart.findOne({ user: userId }).populate({
-        path: "items",
-        populate: {
-          path: "product",
-          model: "Product",
-        },
-      });
+      const cart = await Cart.findOne({ user: userId }).populate("items");
       if (!cart) {
         return res
           .status(404)
@@ -38,7 +32,7 @@ class CartController {
         path: "items",
         populate: {
           path: "product", // Populate để lấy thông tin chi tiết của sản phẩm
-          select: "name price", // Chỉ lấy giá của sản phẩm
+          select: "name price image", // Chỉ lấy giá của sản phẩm
         },
       });
 
