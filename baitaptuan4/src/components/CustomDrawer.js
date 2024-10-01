@@ -27,6 +27,7 @@ const CustomDrawer = (props) => {
     const accessToken = await AsyncStorage.getItem("@accessToken");
     // const API_URL = process.env.API_URL;
     console.log("access logout ", accessToken);
+    console.log("resetAPI2")
     try {
       const response = await fetch(`${API_URL}/user/logout`, {
         method: "GET",

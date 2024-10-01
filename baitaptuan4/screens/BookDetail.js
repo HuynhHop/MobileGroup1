@@ -15,7 +15,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 const BookDetail = ({ route, navigation }) => {
   const { product } = route.params;
   const API_URL = process.env.API_URL;
-  console.log("AAAA",API_URL)
   const [accessToken, setAccessToken] = useState("");
 
   useEffect(() => {
@@ -62,7 +61,6 @@ const BookDetail = ({ route, navigation }) => {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#333" }}>
-      {/* Phần nội dung */}
       <View style={{ flex: 1 }}>
         <View className="flex-row justify-start mx-5 mt-10">
           <TouchableOpacity
@@ -74,7 +72,6 @@ const BookDetail = ({ route, navigation }) => {
           </TouchableOpacity>
         </View>
 
-        {/* ScrollView chứa nội dung */}
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           <View className="flex-row justify-center mt-5 pb-10">
             <Image
@@ -117,7 +114,6 @@ const BookDetail = ({ route, navigation }) => {
         </ScrollView>
       </View>
 
-      {/* Footer */}
       <View style={styles.footer}>
         <Text className="text-3xl">
           $ {product.price}
@@ -139,7 +135,7 @@ const BookDetail = ({ route, navigation }) => {
 
 const styles = StyleSheet.create({
   scrollContainer: {
-    paddingBottom: 160, // Tạo đủ khoảng trống để thấy hết nội dung trước footer
+    paddingBottom: 160,
   },
   footer: {
     flexDirection: "row",
@@ -149,10 +145,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderTopWidth: 1,
     borderColor: "#ccc",
-    position: "absolute", // Đặt footer cố định phía dưới
+    position: "absolute",
     bottom: 0,
     width: "100%",
-    height: 80, // Đảm bảo footer chiếm một không gian đủ lớn
+    height: 80,
   },
   addToCartButton: {
     backgroundColor: "rgba(45, 41, 36, 0.8)",

@@ -27,6 +27,8 @@ const HomeScreen = ({ navigation }) => {
   const API_URL = process.env.API_URL;
 
   useEffect(() => {
+    console.log("resetAPI")
+    console.log("resetAPI3")
     console.log("Current API URL:", API_URL);
     const checkAuthStatus = async () => {
       const accessToken = await AsyncStorage.getItem("@accessToken");

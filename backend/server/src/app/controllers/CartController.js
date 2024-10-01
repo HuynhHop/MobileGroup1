@@ -15,18 +15,37 @@ class CartController {
           model: "Product",
         },
       });
+
       if (!cart) {
         return res
           .status(404)
           .json({ success: false, message: "Cart not found" });
       }
-      return res.status(200).json({ success: true, cart });
+
+      // Add image URL hosting for each product in the cart
+      const response = cart.items.map((item) => {
+        const product = item.product;
+        const imageUrl = product.image
+          ? `${req.protocol}://${req.get("host")}/public/images/products/${product.image}`
+          : `${req.protocol}://${req.get("host")}/public/images/products/harryPoster.jpg`; // Default image if none available
+
+        return {
+          ...item.toObject(),
+          product: {
+            ...product.toObject(),
+            imageUrl,
+          },
+        };
+      });
+
+      return res.status(200).json({ success: true, cart: { items: response } });
     } catch (error) {
       return res
         .status(500)
-        .json({ success: false, message: "Server error : ", error });
+        .json({ success: false, message: "Server error: ", error });
     }
   }
+
 
   // [GET] /cart/summary
   async getCartSummary(req, res) {

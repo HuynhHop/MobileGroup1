@@ -23,6 +23,7 @@ export default function LoginScreen({ navigation }) {
   // const API_URL = process.env.API_URL;
 
   const handleLogin = async () => {
+    console.log("resetAPI2")
     console.log("Current API URL:", API_URL);
     // Kiểm tra nếu username hoặc password bị trống
     if (!username || !password) {
