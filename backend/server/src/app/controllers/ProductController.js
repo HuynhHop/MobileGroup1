@@ -1,6 +1,6 @@
 const { checkDocumentById } = require("../middlewares/checkDocumentMiddleware");
 const Product = require("../models/Product");
-
+const Cloud = require("../../config/cloudinary.config");
 class ProductController {
   //[GET] /product/:id
   async getById(req, res) {
@@ -10,12 +10,14 @@ class ProductController {
         product = {
           ...product._doc,
           imageUrl: product.image
-            ? `${req.protocol}://${req.get("host")}/public/images/products/${
-                product.image
-              }`
-            : `${req.protocol}://${req.get(
-                "host"
-              )}/public/images/products/harryPoster.jpg`, // Sử dụng ảnh mặc định nếu không có
+            ? product.image.startsWith("http")
+              ? product.image // Sử dụng liên kết cloud nếu đã được cung cấp
+                : `${req.protocol}://${req.get("host")}/public/images/products/${
+                    product.image
+                  }`
+                : `${req.protocol}://${req.get(
+                    "host"
+                  )}/public/images/products/harryPoster.jpg`, // Sử dụng ảnh mặc định nếu không có
         };
       }
       res.status(200).json({ success: product ? true : false, product });
@@ -32,12 +34,14 @@ class ProductController {
       products = products.map((product) => ({
         ...product._doc,
         imageUrl: product.image
-          ? `${req.protocol}://${req.get("host")}/public/images/products/${
-              product.image
-            }`
-          : `${req.protocol}://${req.get(
-              "host"
-            )}/public/images/products/harryPoster.jpg`, // Sử dụng ảnh mặc định nếu không có
+          ? product.image.startsWith("http")
+            ? product.image // Sử dụng liên kết cloud nếu đã được cung cấp
+            : `${req.protocol}://${req.get("host")}/public/images/products/${
+                product.image
+              }`
+            : `${req.protocol}://${req.get(
+                "host"
+              )}/public/images/products/harryPoster.jpg`, // Sử dụng ảnh mặc định nếu không có
       }));
       // Tính tổng số lượng sản phẩm
       const counts = await Product.countDocuments();
@@ -106,12 +110,14 @@ class ProductController {
       response = response.map((product) => ({
         ...product._doc,
         imageUrl: product.image
-          ? `${req.protocol}://${req.get("host")}/public/images/products/${
-              product.image
-            }`
-          : `${req.protocol}://${req.get(
-              "host"
-            )}/public/images/products/harryPoster.jpg`, // Sử dụng ảnh mặc định nếu không có
+          ? product.image.startsWith("http")
+            ? product.image // Sử dụng liên kết cloud nếu đã được cung cấp
+            : `${req.protocol}://${req.get("host")}/public/images/products/${
+                product.image
+              }`
+            : `${req.protocol}://${req.get(
+                "host"
+              )}/public/images/products/harryPoster.jpg`, // Sử dụng ảnh mặc định nếu không có
       }));
 
       // Lấy số lượng sản phẩm
@@ -130,6 +136,15 @@ class ProductController {
   // [POST] /product/store
   async store(req, res) {
     try {
+      Cloud.single('image')(req, res, async (err) => {
+        if (err) {
+          return res.status(500).json({
+            success: false,
+            message: 'Error uploading image',
+            error: err.message,
+          });
+        }
+
       const { name, price, pageNumber, author, publisher, categories } =
         req.body;
       if (Object.keys(req.body).length === 0)
@@ -157,6 +172,11 @@ class ProductController {
         }
       }
 
+      // Nếu có file ảnh, lưu URL vào req.body
+      if (req.file && req.file.path) {
+        req.body.image = req.file.path; // URL ảnh trên Cloudinary
+      }
+
       const product = new Product(req.body);
       const savedProduct = await product.save();
 
@@ -166,6 +186,7 @@ class ProductController {
         message: "Create product successful",
         data: savedProduct,
       });
+    });
     } catch (err) {
       res
         .status(500)
@@ -196,6 +217,20 @@ class ProductController {
         }
       }
 
+      Cloud.single('image')(req, res, async (err) => {
+        if (err) {
+          return res.status(500).json({
+            success: false,
+            message: 'Error uploading image',
+            error: err.message,
+          });
+        }
+
+      // Nếu có file ảnh, lưu URL vào req.body
+      if (req.file && req.file.path) {
+        req.body.image = req.file.path; // URL ảnh trên Cloudinary
+      }
+
       // Cập nhật product
       const updatedProduct = await Product.findByIdAndUpdate(id, req.body, {
         new: true,
@@ -206,6 +241,7 @@ class ProductController {
         message: "Product update successful",
         data: updatedProduct,
       });
+    }); 
     } catch (error) {
       console.error(error);
       res.status(500).json({

@@ -26,8 +26,10 @@ class CartController {
       const response = cart.items.map((item) => {
         const product = item.product;
         const imageUrl = product.image
-          ? `${req.protocol}://${req.get("host")}/public/images/products/${product.image}`
-          : `${req.protocol}://${req.get("host")}/public/images/products/harryPoster.jpg`; // Default image if none available
+          ? product.image.startsWith("http")
+            ? product.image // Sử dụng liên kết cloud nếu đã được cung cấp
+            : `${req.protocol}://${req.get("host")}/public/images/products/${product.image}`
+            : `${req.protocol}://${req.get("host")}/public/images/products/harryPoster.jpg`; // Default image if none available
 
         return {
           ...item.toObject(),
