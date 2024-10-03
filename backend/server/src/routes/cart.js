@@ -7,9 +7,10 @@ router.get("/summary", [verifyAccessToken], cartController.getCartSummary);
 router.get("/", [verifyAccessToken], cartController.getCart);
 
 router.post("/items", [verifyAccessToken], cartController.addProductToCart);
-router.post("/checkout", [verifyAccessToken], cartController.checkoutCart);
+router.post("/checkout", [verifyAccessToken], cartController.checkout);
 
 router.put("/items", [verifyAccessToken], cartController.updateCartItem);
+router.put("/item/:id/checkout", [verifyAccessToken], cartController.updateSelectedForCheckout);
 router.put(
   "/item/:id/checkout",
   [verifyAccessToken],

@@ -16,7 +16,8 @@ const BookDetail = ({ route, navigation }) => {
   const { product } = route.params;
   const API_URL = process.env.API_URL;
   const [accessToken, setAccessToken] = useState("");
-
+  console.log("resetAPI")
+  
   useEffect(() => {
     const getToken = async () => {
       const token = await AsyncStorage.getItem("@accessToken");

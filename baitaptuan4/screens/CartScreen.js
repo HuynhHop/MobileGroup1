@@ -41,8 +41,7 @@ const CartScreen = ({ navigation }) => {
 
       if (data.success) {
         setCartItems(data.cart.items);
-        setTotalPrice(data.cart.items.reduce((total, item) => total + item.product.price * item.quantity, 0));
-        setTotalQuantity(data.cart.items.reduce((total, item) => total + item.quantity, 0));
+        setCheckedItems({}); // Reset checked items khi tải lại giỏ hàng
       } else {
         console.error("Error fetching cart:", data.message);
       }
@@ -53,9 +52,53 @@ const CartScreen = ({ navigation }) => {
 
   useFocusEffect(
     React.useCallback(() => {
-      fetchCartItems(); // Fetch cart items every time CartScreen is focused
+      fetchCartItems(); // Lấy dữ liệu giỏ hàng mỗi khi màn hình CartScreen được focus
     }, [])
   );
+
+  const calculateTotals = () => {
+    const selectedItems = cartItems.filter(item => checkedItems[item._id]);
+    const newTotalPrice = selectedItems.reduce((total, item) => total + item.product.price * item.quantity, 0);
+    const newTotalQuantity = selectedItems.reduce((total, item) => total + item.quantity, 0);
+    setTotalPrice(newTotalPrice);
+    setTotalQuantity(newTotalQuantity);
+  };
+
+  const toggleItemChecked = async (itemId) => {
+    const isChecked = !checkedItems[itemId];
+    setCheckedItems((prev) => ({
+      ...prev,
+      [itemId]: isChecked,
+    }));
+
+    // Tính lại total ngay sau khi cập nhật checkedItems
+    calculateTotals();
+
+    const accessToken = await AsyncStorage.getItem("@accessToken");
+
+    try {
+      const response = await fetch(`${API_URL}/cart/item/${itemId}/checkout`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ selectedForCheckout: isChecked }),
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.message);
+      }
+    } catch (error) {
+      console.error("Error updating selectedForCheckout:", error);
+    }
+  };
+
+  useEffect(() => {
+    calculateTotals();
+  }, [checkedItems]); // Gọi calculateTotals mỗi khi checkedItems thay đổi
 
   const handleDeleteItem = (itemId) => {
     Alert.alert("Delete Item", "Are you sure you want to delete this item?", [
@@ -76,8 +119,7 @@ const CartScreen = ({ navigation }) => {
             const data = await response.json();
 
             if (data.success) {
-              // Fetch updated cart items after successful deletion
-              fetchCartItems();
+              fetchCartItems(); // Làm mới giỏ hàng sau khi xóa
             } else {
               console.error("Error deleting item:", data.message);
             }
@@ -89,41 +131,32 @@ const CartScreen = ({ navigation }) => {
     ]);
   };
 
-  const toggleItemChecked = (itemId) => {
-    setCheckedItems((prev) => ({
-      ...prev,
-      [itemId]: !prev[itemId],
-    }));
-  };
-
   const handleCheckout = async () => {
+    const selectedItems = cartItems.filter(item => checkedItems[item._id]);
+
+    if (selectedItems.length === 0) {
+      Alert.alert("Checkout Failed", "No items selected for checkout", [{ text: "OK" }]);
+      return; // Dừng quá trình checkout nếu không có sản phẩm nào được chọn
+    }
+
     const accessToken = await AsyncStorage.getItem("@accessToken");
     try {
-      for (const item of cartItems) {
-        if (checkedItems[item._id]) {
-          const response = await fetch(`${API_URL}/cart/item/${item._id}/checkout`, {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${accessToken}`,
-            },
-            body: JSON.stringify({ selectedForCheckout: true }),
-          });
+      const response = await fetch(`${API_URL}/cart/checkout`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
 
-          const data = await response.json();
+      const data = await response.json();
 
-          if (!data.success) {
-            throw new Error(data.message);
-          }
-
-          // Call delete item function after successful checkout
-          await handleDeleteItem(item._id);
-        }
+      if (data.success) {
+        Alert.alert("Checkout Successful", "Ok!", [{ text: "OK" }]);
+        fetchCartItems(); // Làm mới giỏ hàng sau khi checkout thành công
+      } else {
+        Alert.alert("Checkout Failed", data.message, [{ text: "OK" }]);
       }
-
-      Alert.alert("Checkout Successful", "Your items are ready for checkout!", [{ text: "OK" }]);
-      // Refresh cart items after successful checkout
-      fetchCartItems();
     } catch (error) {
       console.error("Error during checkout:", error);
       Alert.alert("Checkout Failed", "There was an error during checkout. Please try again.", [{ text: "OK" }]);
@@ -210,6 +243,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     marginBottom: 16,
+    marginTop: 30,
   },
   backButton: {
     fontSize: 24,
@@ -248,36 +282,37 @@ const styles = StyleSheet.create({
   productImage: {
     width: 50,
     height: 50,
-    marginRight: 8,
+    marginRight: 16,
   },
   productDetails: {
     flex: 1,
   },
   detailButton: {
-    backgroundColor: "#f0f0f0",
-    padding: 8,
-    borderRadius: 4,
     marginRight: 8,
+    backgroundColor: "#007BFF",
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 4,
   },
   detailButtonText: {
-    color: "#333",
+    color: "#fff",
   },
   cartSummary: {
     marginTop: 16,
-    padding: 8,
-    backgroundColor: "#f9f9f9",
-    borderRadius: 8,
+    paddingVertical: 8,
+    borderTopWidth: 1,
+    borderTopColor: "#ccc",
   },
   checkoutButton: {
-    backgroundColor: "#4CAF50",
-    padding: 12,
-    borderRadius: 8,
-    alignItems: "center",
     marginTop: 16,
+    backgroundColor: "#28a745",
+    paddingVertical: 12,
+    borderRadius: 4,
+    alignItems: "center",
   },
   checkoutButtonText: {
     color: "#fff",
-    fontWeight: "bold",
+    fontSize: 16,
   },
 });
 

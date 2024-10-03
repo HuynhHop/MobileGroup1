@@ -163,39 +163,40 @@ class CartController {
   }
 
   //[POST] /cart/checkout
-  async checkoutCart(req, res) {
+  async checkout(req, res) {
     try {
-      const user = req.user; // Lấy thông tin user từ accessToken
-
+      const user = req.user; // Get user info from accessToken
+      
+      // Find the cart for the current user
       let cart = await Cart.findOne({ user: user._id }).populate({
         path: "items",
         select: "selectedForCheckout quantity",
         populate: {
           path: "product",
-          select: "_id name price image",
+          model: "Product",
+          populate: { path: "categories" },
         },
       });
 
       if (!cart) {
-        return res
-          .status(400)
-          .json({ success: false, message: "Cart not found" });
+        return res.status(400).json({ success: false, message: "Cart not found" });
       }
 
       const selectedItems = cart.items.filter(
         (item) => item.selectedForCheckout && !item.deleted
       );
+
       if (selectedItems.length === 0) {
         return res
           .status(400)
           .json({ success: false, message: "No items selected for checkout" });
       }
-      // Mảng lưu trữ các _id của OrderDetail đã lưu
+
+      // Array to store saved OrderDetail IDs
       const orderDetailsIds = [];
 
-      // Vòng lặp for để tạo OrderDetail cho mỗi item
+      // Loop through selected items to create OrderDetails
       for (const item of selectedItems) {
-        // Tạo OrderDetail
         const orderDetail = new OrderDetail({
           productId: item.product._id,
           productName: item.product.name,
@@ -204,33 +205,38 @@ class CartController {
           quantity: item.quantity,
         });
 
-        // Lưu OrderDetail vào cơ sở dữ liệu
         const savedOrderDetail = await orderDetail.save();
         orderDetailsIds.push(savedOrderDetail._id);
+
+        await Product.findByIdAndUpdate(
+          item.product._id,
+          { $inc: { soldCount: item.quantity } }, // Increment soldCount by quantity
+          { new: true }
+        );
       }
 
       const totalPrice = selectedItems.reduce(
         (acc, item) => acc + item.product.price * item.quantity,
         0
       );
-      const payment = req.body.payment;
-      if (!payment) {
-        return res
-          .status(400)
-          .json({ success: false, message: "Payment method not provided" });
-      }
 
       const newOrder = await Order.create({
         details: orderDetailsIds,
         date: new Date(),
         status: "Pending",
         totalPrice: totalPrice,
-        payment: payment, // Payment information từ client
         user: user._id,
       });
-      // Nếu cần, bạn có thể xóa các item đã checkout khỏi giỏ hàng
+
+      // Optionally remove checked-out items from the cart
+      const itemsToRemove = cart.items.filter((item) => item.selectedForCheckout);
       cart.items = cart.items.filter((item) => !item.selectedForCheckout);
       await cart.save();
+
+      // Delete corresponding LineItems from the database
+      for (const item of itemsToRemove) {
+        await LineItem.findByIdAndDelete(item._id);
+      }
 
       res.status(200).json({
         success: true,

@@ -22,12 +22,12 @@ import { API_URL } from "@env";
 const CustomDrawer = (props) => {
   const { user, setIsAuthenticated, setUser } = useAuth(); // Use logout directly
   const navigation = useNavigation();
+  console.log("ResetAPI")
 
   const handleLogout = async () => {
     const accessToken = await AsyncStorage.getItem("@accessToken");
     // const API_URL = process.env.API_URL;
     console.log("access logout ", accessToken);
-    console.log("resetAPI2")
     try {
       const response = await fetch(`${API_URL}/user/logout`, {
         method: "GET",
@@ -36,9 +36,9 @@ const CustomDrawer = (props) => {
           "Content-Type": "application/json",
         },
       });
-
+      await AsyncStorage.removeItem("@accessToken");
       if (response.ok) {
-        await AsyncStorage.removeItem("@accessToken");
+        // await AsyncStorage.removeItem("@accessToken");
         setIsAuthenticated(false);
         Alert.alert("Success", "Logout successful", [
           {
