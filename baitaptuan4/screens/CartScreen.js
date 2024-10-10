@@ -152,7 +152,12 @@ const CartScreen = ({ navigation }) => {
       const data = await response.json();
 
       if (data.success) {
-        Alert.alert("Checkout Successful", "Ok!", [{ text: "OK" }]);
+        Alert.alert("Checkout Successful", "Ok!", [
+          {
+            text: "OK",
+            onPress: () => navigation.navigate("Order"),
+          },
+        ]);
         fetchCartItems(); // Làm mới giỏ hàng sau khi checkout thành công
       } else {
         Alert.alert("Checkout Failed", data.message, [{ text: "OK" }]);

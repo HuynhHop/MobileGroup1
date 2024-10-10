@@ -8,6 +8,7 @@ import TabNavigator from "./TabNavigator";
 import CartScreen from "../../screens/CartScreen";
 
 import { useAuth } from "../hook/authContext";
+import OrderScreen from "../../screens/OrderScreen";
 const Drawer = createDrawerNavigator();
 
 // Drawer Navigator cho các màn hình sau khi đăng nhập
@@ -65,6 +66,16 @@ export default function DrawerNavigator() {
             options={{
               drawerIcon: ({ color }) => (
                 <Ionicons name="cart-outline" size={22} color={color} />
+              ),
+            }}
+          />
+
+          <Drawer.Screen
+            name="StateOrder"
+            component={OrderScreen}
+            options={{
+              drawerIcon: ({ color }) => (
+                <Ionicons name="list" size={22} color={color} />
               ),
             }}
           />

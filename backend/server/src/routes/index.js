@@ -6,7 +6,8 @@ const productRouter = require("./product");
 const userRouter = require("./user");
 const feedbackRouter = require("./feedback");
 const cartRouter = require("./cart");
-const commentRouter = require("./comment");
+// const commentRouter = require("./comment");
+const orderRouter = require("./order");
 
 const { notFound, errHandler } = require("../app/middlewares/ErrorHandler");
 
@@ -19,7 +20,8 @@ function route(app) {
   app.use("/user", userRouter);
   app.use("/feedback", feedbackRouter);
   app.use("/cart", cartRouter);
-  app.use("/comment", commentRouter)
+  // app.use("/comment", commentRouter);
+  app.use("/order", orderRouter);
 
   // Nếu không vào route nào thì là err Not found
   app.use(notFound);
