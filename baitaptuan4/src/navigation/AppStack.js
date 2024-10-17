@@ -6,6 +6,7 @@ import BookDetail from "../../screens/BookDetail";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import TabNavigator from "./TabNavigator";
 import OrderScreen from "../../screens/OrderScreen";
+import OrderDetailScreen from "../../screens/OrderDetailScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -37,6 +38,7 @@ const AppStack = () => {
       <Stack.Screen name="Main" component={DrawerNavigator} />
       <Stack.Screen name="BookDetail" component={BookDetail} />
       <Stack.Screen name="Order" component={OrderScreen} />
+      <Stack.Screen name="OrderDetail" component={OrderDetailScreen} />
     </Stack.Navigator>
   );
 };

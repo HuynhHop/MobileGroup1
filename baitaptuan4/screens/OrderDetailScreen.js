@@ -9,24 +9,21 @@ import {
   Alert,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useAuth } from "../src/hook/authContext";
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { useFocusEffect } from "@react-navigation/native";
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
-const CartScreen = ({ navigation }) => {
-  const { user } = useAuth();
-  const [cartItems, setCartItems] = useState([]);
+const OrderDetailScreen = ({ route, navigation }) => {
+  const { orderId } = route.params; // Nhận orderId từ navigation params
+  const [orderDetails, setOrderDetails] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
   const [totalQuantity, setTotalQuantity] = useState(0);
-  const API_URL = process.env.API_URL;
   const [checkedItems, setCheckedItems] = useState({});
-  console.log("ResetAPI")
+  const API_URL = process.env.API_URL;
 
-  const fetchCartItems = async () => {
-    const accessToken = await AsyncStorage.getItem("@accessToken");
+  const fetchOrderDetails = async () => {
     try {
-      const response = await fetch(`${API_URL}/cart/`, {
+      const accessToken = await AsyncStorage.getItem("@accessToken");
+      const response = await fetch(`${API_URL}/order/${orderId}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -34,72 +31,42 @@ const CartScreen = ({ navigation }) => {
         },
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch cart data");
-      }
-
       const data = await response.json();
 
       if (data.success) {
-        setCartItems(data.cart.items);
-        setCheckedItems({}); // Reset checked items khi tải lại giỏ hàng
+        setOrderDetails(data.orderDetails);
+        setCheckedItems({}); // Reset checked items khi tải lại chi tiết đơn hàng
       } else {
-        console.error("Error fetching cart:", data.message);
+        console.error("Error fetching order details:", data.message);
       }
     } catch (error) {
-      console.error("Error fetching cart data:", error);
-    }
-  };
-
-  useFocusEffect(
-    React.useCallback(() => {
-      fetchCartItems(); // Lấy dữ liệu giỏ hàng mỗi khi màn hình CartScreen được focus
-    }, [])
-  );
-
-  const calculateTotals = () => {
-    const selectedItems = cartItems.filter(item => checkedItems[item._id]);
-    const newTotalPrice = selectedItems.reduce((total, item) => total + item.product.price * item.quantity, 0);
-    const newTotalQuantity = selectedItems.reduce((total, item) => total + item.quantity, 0);
-    setTotalPrice(newTotalPrice);
-    setTotalQuantity(newTotalQuantity);
-  };
-
-  const toggleItemChecked = async (itemId) => {
-    const isChecked = !checkedItems[itemId];
-    setCheckedItems((prev) => ({
-      ...prev,
-      [itemId]: isChecked,
-    }));
-
-    // Tính lại total ngay sau khi cập nhật checkedItems
-    calculateTotals();
-
-    const accessToken = await AsyncStorage.getItem("@accessToken");
-
-    try {
-      const response = await fetch(`${API_URL}/cart/item/${itemId}/checkout`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({ selectedForCheckout: isChecked }),
-      });
-
-      const data = await response.json();
-
-      if (!data.success) {
-        throw new Error(data.message);
-      }
-    } catch (error) {
-      console.error("Error updating selectedForCheckout:", error);
+      console.error("Error fetching order details:", error);
     }
   };
 
   useEffect(() => {
+    fetchOrderDetails();
+  }, []);
+
+  const toggleItemChecked = (itemId) => {
+    setCheckedItems((prev) => ({
+      ...prev,
+      [itemId]: !prev[itemId],
+    }));
     calculateTotals();
-  }, [checkedItems]); // Gọi calculateTotals mỗi khi checkedItems thay đổi
+  };
+
+  const calculateTotals = () => {
+    const selectedItems = orderDetails.filter(item => checkedItems[item._id]);
+    const newTotalPrice = selectedItems.reduce((total, item) => total + item.productPrice * item.quantity, 0);
+    const newTotalQuantity = selectedItems.reduce((total, item) => total + item.quantity, 0);
+    setTotalQuantity(newTotalQuantity);
+    setTotalPrice(newTotalPrice);
+  };
+
+  useEffect(() => {
+    calculateTotals();
+  }, [checkedItems]);
 
   const handleDeleteItem = (itemId) => {
     Alert.alert("Delete Item", "Are you sure you want to delete this item?", [
@@ -109,7 +76,7 @@ const CartScreen = ({ navigation }) => {
         onPress: async () => {
           const accessToken = await AsyncStorage.getItem("@accessToken");
           try {
-            const response = await fetch(`${API_URL}/cart/items/${itemId}`, {
+            const response = await fetch(`${API_URL}/order/item/${itemId}`, {
               method: "DELETE",
               headers: {
                 "Content-Type": "application/json",
@@ -120,7 +87,7 @@ const CartScreen = ({ navigation }) => {
             const data = await response.json();
 
             if (data.success) {
-              fetchCartItems(); // Làm mới giỏ hàng sau khi xóa
+              fetchOrderDetails(); // Làm mới chi tiết đơn hàng sau khi xóa
             } else {
               console.error("Error deleting item:", data.message);
             }
@@ -132,50 +99,13 @@ const CartScreen = ({ navigation }) => {
     ]);
   };
 
-  const handleCheckout = async () => {
-    const selectedItems = cartItems.filter(item => checkedItems[item._id]);
-
-    if (selectedItems.length === 0) {
-      Alert.alert("Checkout Failed", "No items selected for checkout", [{ text: "OK" }]);
-      return; // Dừng quá trình checkout nếu không có sản phẩm nào được chọn
-    }
-
-    const accessToken = await AsyncStorage.getItem("@accessToken");
-    try {
-      const response = await fetch(`${API_URL}/cart/checkout`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        Alert.alert("Checkout Successful", "Ok!", [
-          {
-            text: "OK",
-            onPress: () => navigation.navigate("Order"),
-          },
-        ]);
-        fetchCartItems(); // Làm mới giỏ hàng sau khi checkout thành công
-      } else {
-        Alert.alert("Checkout Failed", data.message, [{ text: "OK" }]);
-      }
-    } catch (error) {
-      console.error("Error during checkout:", error);
-      Alert.alert("Checkout Failed", "There was an error during checkout. Please try again.", [{ text: "OK" }]);
-    }
-  };
-
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Text style={styles.backButton}>{"<"}</Text>
         </TouchableOpacity>
-        <Text style={styles.headerText}>My Cart</Text>
+        <Text style={styles.headerText}>Order Details</Text>
         <TouchableOpacity>
           <Image
             source={require("../assets/images/user-profile.jpg")}
@@ -184,9 +114,9 @@ const CartScreen = ({ navigation }) => {
         </TouchableOpacity>
       </View>
 
-      {cartItems.length > 0 ? (
-        cartItems.map((item) => (
-          <View key={item._id} style={styles.cartItem}>
+      {orderDetails.length > 0 ? (
+        orderDetails.map((item) => (
+          <View key={item._id} style={styles.orderItem}>
             <TouchableOpacity onPress={() => toggleItemChecked(item._id)}>
               <View style={styles.checkbox}>
                 {checkedItems[item._id] ? (
@@ -197,20 +127,20 @@ const CartScreen = ({ navigation }) => {
               </View>
             </TouchableOpacity>
             <Image
-              source={{ uri: item.product.imageUrl }}
+              source={{ uri: item.imageUrl }}
               style={styles.productImage}
             />
             <View style={styles.productDetails}>
-              <Text>{item.product.name}</Text>
+              <Text>{item.productName}</Text>
               <Text>
-                {item.product.price.toFixed(2)}{"  "}
+                {item.productPrice.toFixed(2)}{"  "}
                 <FontAwesome5 name="coins" size={20} color="#CDAD00" />
               </Text>
               <Text>Quantity: {item.quantity}</Text>
             </View>
             <TouchableOpacity
               style={styles.detailButton}
-              onPress={() => navigation.navigate('BookDetail', { product: item.product })}
+              onPress={() => navigation.navigate('BookDetail', {  product: item })}
             >
               <Text style={styles.detailButtonText}>Detail</Text>
             </TouchableOpacity>
@@ -220,20 +150,15 @@ const CartScreen = ({ navigation }) => {
           </View>
         ))
       ) : (
-        <Text>Your cart is empty.</Text>
+        <Text>No order details found.</Text>
       )}
 
-      <View style={styles.cartSummary}>
+      <View style={styles.orderSummary}>
         <Text>Total Items: {totalQuantity}</Text>
-        <Text>
-          Total Price: {totalPrice.toFixed(2)}{"  "}
+        <Text>Total Price: {totalPrice.toFixed(2)}{"  "}
           <FontAwesome5 name="coins" size={20} color="#CDAD00" />
         </Text>
       </View>
-
-      <TouchableOpacity style={styles.checkoutButton} onPress={handleCheckout}>
-        <Text style={styles.checkoutButtonText}>Checkout</Text>
-      </TouchableOpacity>
     </ScrollView>
   );
 };
@@ -263,7 +188,7 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
   },
-  cartItem: {
+  orderItem: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 16,
@@ -303,23 +228,12 @@ const styles = StyleSheet.create({
   detailButtonText: {
     color: "#fff",
   },
-  cartSummary: {
+  orderSummary: {
     marginTop: 16,
     paddingVertical: 8,
     borderTopWidth: 1,
     borderTopColor: "#ccc",
   },
-  checkoutButton: {
-    marginTop: 16,
-    backgroundColor: "#28a745",
-    paddingVertical: 12,
-    borderRadius: 4,
-    alignItems: "center",
-  },
-  checkoutButtonText: {
-    color: "#fff",
-    fontSize: 16,
-  },
 });
 
-export default CartScreen;
+export default OrderDetailScreen;
