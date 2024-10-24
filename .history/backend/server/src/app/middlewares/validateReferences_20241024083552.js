@@ -107,8 +107,4 @@ const validateReferencesComment = async (req, res, next) => {
   }
 };
 
-module.exports = {
-  validateReferencesProduct,
-  validateReferencesRating,
-  validateReferencesComment,
-};
+module.exports = { validateReferencesProduct, validateReferencesFeedback };

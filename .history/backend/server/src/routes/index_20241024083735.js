@@ -23,7 +23,6 @@ function route(app) {
   app.use("/cart", cartRouter);
   // app.use("/comment", commentRouter);
   app.use("/order", orderRouter);
-  app.use("/rating", ratingRouter);
 
   // Nếu không vào route nào thì là err Not found
   app.use(notFound);

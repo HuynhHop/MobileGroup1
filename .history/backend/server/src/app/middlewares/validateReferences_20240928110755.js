@@ -49,36 +49,7 @@ const validateReferencesProduct = async (req, res, next) => {
       .json({ success: false, message: "An error occurred" + error });
   }
 };
-const validateReferencesRating = async (req, res, next) => {
-  try {
-    const { user, product } = req.body;
-    if (user) {
-      const userExists = await User.findById(user);
-      if (!userExists) {
-        return res
-          .status(400)
-          .json({ success: false, message: "User not found" });
-      }
-    }
-
-    if (product) {
-      const productExists = await Product.findById(product);
-      if (!productExists) {
-        return res
-          .status(400)
-          .json({ success: false, message: "Product not found" });
-      }
-    }
-
-    next();
-  } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .json({ success: false, message: "An error occurred" + error });
-  }
-};
-const validateReferencesComment = async (req, res, next) => {
+const validateReferencesFeedback = async (req, res, next) => {
   try {
     const { user, product } = req.body;
     if (user) {
@@ -107,8 +78,4 @@ const validateReferencesComment = async (req, res, next) => {
   }
 };
 
-module.exports = {
-  validateReferencesProduct,
-  validateReferencesRating,
-  validateReferencesComment,
-};
+module.exports = { validateReferencesProduct, validateReferencesFeedback };
