@@ -53,7 +53,6 @@ const userSchema = new Schema(
     passwordChangedAt: { type: String },
     passwordResetToken: { type: String },
     passwordResetExpires: { type: String },
-    member: { type: Number, ref: "Member" },
   },
 
   { timestamps: true }

@@ -7,8 +7,6 @@ router.get("/byToken", verifyAccessToken, userController.getUserFromToken);
 router.get("/logout", verifyAccessToken, userController.logout);
 router.get("/forgotPassword", userController.forgotPassword);
 router.get("/editProfileSendOTP", userController.editProfileSendOTP);
-router.get("/rank", [verifyAccessToken], userController.getUserRank);
-
 router.post("/sendOTP", userController.sendOTP);
 router.get("/resetPassword/:resetToken", userController.getResetToken);
 router.get("/:id", userController.getById);

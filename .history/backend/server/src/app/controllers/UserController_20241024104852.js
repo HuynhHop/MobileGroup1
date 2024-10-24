@@ -128,10 +128,8 @@ class UserController {
   // [GET] /user/rank
   async getUserRank(req, res) {
     try {
-      const userId = req.user._id; // Lấy userId từ thông tin đã đăng nhập (accessToken)
-
       // Tìm user và populate trường member để lấy rank
-      const user = await User.findById(userId).populate("member");
+      const user = req.user.populate("member");
 
       if (!user) {
         return res

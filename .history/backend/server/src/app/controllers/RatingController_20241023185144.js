@@ -1,8 +1,6 @@
-const Member = require("../models/Member");
 const Order = require("../models/Order");
 const Product = require("../models/Product");
 const Rating = require("../models/Rating");
-const User = require("../models/User");
 
 class RatingController {
   // [GET] /rating/
@@ -93,7 +91,6 @@ class RatingController {
           star,
           product,
         });
-
         await rating.save();
       }
 

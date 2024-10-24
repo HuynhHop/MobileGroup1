@@ -1,4 +1,3 @@
-const Member = require("../models/Member");
 const Order = require("../models/Order");
 const Product = require("../models/Product");
 const Rating = require("../models/Rating");
@@ -93,8 +92,12 @@ class RatingController {
           star,
           product,
         });
-
         await rating.save();
+        const user = await User.findById(_id).populate("member");
+        if (user && user.member) {
+          user.member.score += 2; // Cộng thêm 2 điểm
+          await user.member.save(); // Lưu thay đổi vào Member
+        }
       }
 
       // Tính lại rating trung bình

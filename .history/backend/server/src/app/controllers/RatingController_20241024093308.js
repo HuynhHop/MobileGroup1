@@ -93,8 +93,14 @@ class RatingController {
           star,
           product,
         });
-
         await rating.save();
+      }
+      const user = await User.findById(_id).populate("member");
+      if (user && user.member) {
+        const member = Member.findById(user.member);
+
+        member.score += 2; // Cộng thêm 2 điểm
+        await member.save(); // Lưu thay đổi vào Member
       }
 
       // Tính lại rating trung bình

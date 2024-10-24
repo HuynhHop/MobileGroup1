@@ -149,7 +149,6 @@ class OrderController {
           .status(400)
           .json({ success: false, message: "Payment method not provided" });
       }
-
       let cart = await Cart.findOne({ user: user._id }).populate({
         path: "items",
         select: "selectedForCheckout quantity",
@@ -169,16 +168,14 @@ class OrderController {
       const selectedItems = cart.items.filter(
         (item) => item.selectedForCheckout && !item.deleted
       );
-
+      console.log(cart);
       if (selectedItems.length === 0) {
         return res
           .status(400)
           .json({ success: false, message: "No items selected for checkout" });
       }
-
       // Mảng lưu trữ các _id của OrderDetail đã lưu
       const orderDetailsIds = [];
-
       // Vòng lặp for để tạo OrderDetail cho mỗi item
       for (const item of selectedItems) {
         // Tạo OrderDetail
@@ -201,30 +198,16 @@ class OrderController {
         );
       }
 
-      // Tính tổng giá trị của các sản phẩm đã chọn
-      let totalPrice = selectedItems.reduce(
+      const totalPrice = selectedItems.reduce(
         (acc, item) => acc + item.product.price * item.quantity,
         0
       );
 
-      // Kiểm tra rank của user để áp dụng giảm giá
-      const member = await Member.findById(user.member); // Lấy thông tin member của user
-      if (member) {
-        if (member.rank === "Silver") {
-          totalPrice *= 0.98; // Giảm 2%
-        } else if (member.rank === "Gold") {
-          totalPrice *= 0.95; // Giảm 5%
-        } else if (member.rank === "Diamond") {
-          totalPrice *= 0.9; // Giảm 10%
-        }
-      }
-
-      // Tạo đơn hàng mới
       const newOrder = await Order.create({
         details: orderDetailsIds,
         date: new Date(),
         status: "Pending",
-        totalPrice: totalPrice.toFixed(2), // Làm tròn 2 chữ số thập phân
+        totalPrice: totalPrice,
         payment: payment, // Payment information từ client
         user: user._id,
       });
@@ -235,7 +218,6 @@ class OrderController {
       );
       cart.items = cart.items.filter((item) => !item.selectedForCheckout);
       await cart.save();
-
       // Xóa các LineItem tương ứng khỏi cơ sở dữ liệu
       for (const item of itemsToRemove) {
         await LineItem.findByIdAndDelete(item._id);
@@ -292,9 +274,10 @@ class OrderController {
           (acc, detail) => acc + detail.quantity,
           0
         );
+
         const user = await User.findById(order.user).populate("member");
         if (user && user.member) {
-          user.member.score += 2 * totalQuantity; // Cộng thêm 2 điểm
+          user.member.score += 2; // Cộng thêm 2 điểm
           await user.member.save(); // Lưu thay đổi vào Member
         }
       }

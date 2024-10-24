@@ -12,7 +12,6 @@ const {
   generateRefreshToken,
 } = require("../middlewares/jwt");
 const { sendMail } = require("../../util/sendMail");
-const Member = require("../models/Member");
 class UserController {
   //[GET] /user/:id
   async getById(req, res) {
@@ -122,44 +121,6 @@ class UserController {
       return res
         .status(500)
         .json({ success: false, message: "An error occurred", error });
-    }
-  }
-
-  // [GET] /user/rank
-  async getUserRank(req, res) {
-    try {
-      const userId = req.user._id; // Lấy userId từ thông tin đã đăng nhập (accessToken)
-
-      // Tìm user và populate trường member để lấy rank
-      const user = await User.findById(userId).populate("member");
-
-      if (!user) {
-        return res
-          .status(404)
-          .json({ success: false, message: "User not found" });
-      }
-
-      if (!user.member) {
-        return res
-          .status(404)
-          .json({ success: false, message: "Member information not found" });
-      }
-
-      // Lấy rank từ member
-      const userRank = user.member.rank;
-
-      // Trả về rank của user
-      return res.status(200).json({
-        success: true,
-        rank: userRank,
-        message: `User rank is ${userRank}`,
-      });
-    } catch (error) {
-      return res.status(500).json({
-        success: false,
-        message: "Failed to get user rank",
-        error: error.message,
-      });
     }
   }
 

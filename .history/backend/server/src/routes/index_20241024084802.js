@@ -19,9 +19,9 @@ function route(app) {
   app.use("/publisher", publisherRouter);
   app.use("/product", productRouter);
   app.use("/user", userRouter);
-  // app.use("/feedback", feedbackRouter);
+  app.use("/feedback", feedbackRouter);
   app.use("/cart", cartRouter);
-  app.use("/comment", commentRouter);
+  // app.use("/comment", commentRouter);
   app.use("/order", orderRouter);
   app.use("/rating", ratingRouter);
 
