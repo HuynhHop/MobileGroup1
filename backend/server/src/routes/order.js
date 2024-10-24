@@ -16,6 +16,11 @@ router.get(
 router.get("/:id", [verifyAccessToken], orderController.getById);
 
 router.post("/checkout", [verifyAccessToken], orderController.checkout);
+router.put(
+  "/updateStatus/:id",
+  [verifyAccessToken, isAdmin],
+  orderController.updateStatus
+);
 router.delete("/:id", verifyAccessToken, orderController.deleteByUser);
 
 module.exports = router;

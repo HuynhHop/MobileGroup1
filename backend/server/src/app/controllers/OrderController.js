@@ -12,18 +12,22 @@ class OrderController {
       let order = await Order.findOne({ _id: req.params.id }).populate({
         path: "details",
         model: "OrderDetail",
-        select: 'productId productName productImage productPrice quantity', // Lấy các trường cần thiết
+        select: "productId productName productImage productPrice quantity", // Lấy các trường cần thiết
       });
       let response;
       if (order) {
         // Duyệt qua từng chi tiết đơn hàng để tạo imageUrl cho mỗi sản phẩm
-         response = order.details.map((detail) => {
+        response = order.details.map((detail) => {
           // Kiểm tra nếu sản phẩm có hình ảnh, tạo URL đầy đủ
           const imageUrl = detail.productImage
             ? detail.productImage.startsWith("http")
               ? detail.productImage // Nếu đã là URL đầy đủ
-              : `${req.protocol}://${req.get("host")}/public/images/products/${detail.productImage}` // Nếu chỉ là tên file, tạo URL
-            : `${req.protocol}://${req.get("host")}/public/images/products/defaultImage.jpg`; // Ảnh mặc định nếu không có
+              : `${req.protocol}://${req.get("host")}/public/images/products/${
+                  detail.productImage
+                }` // Nếu chỉ là tên file, tạo URL
+            : `${req.protocol}://${req.get(
+                "host"
+              )}/public/images/products/defaultImage.jpg`; // Ảnh mặc định nếu không có
 
           // Trả về chi tiết đơn hàng với trường imageUrl đã thêm
           return {
@@ -34,13 +38,13 @@ class OrderController {
       }
 
       // Trả về chi tiết đơn hàng với các imageUrl được tạo
-      res.status(200).json({ success: true, orderDetails :response});
+      res.status(200).json({ success: true, orderDetails: response });
     } catch (error) {
       // Xử lý lỗi và trả về phản hồi lỗi
       res.status(500).json({ success: false, message: error.message });
     }
   }
-  
+
   // [GET] /order/getByUser
   async getAllsByUser(req, res) {
     try {
@@ -232,6 +236,47 @@ class OrderController {
     }
   }
 
+  // [PUT] /order/updateStatus/:id
+  async updateStatus(req, res) {
+    try {
+      const { id } = req.params;
+      const { status } = req.body; // Lấy trạng thái mới từ request body
+
+      // Kiểm tra trạng thái mới có hợp lệ không
+      const validStatuses = ["Pending", "Shipping", "Transported", "Cancelled"];
+      if (!validStatuses.includes(status)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid order status",
+        });
+      }
+
+      // Tìm đơn hàng theo ID
+      const order = await Order.findById(id);
+      if (!order) {
+        return res.status(404).json({
+          success: false,
+          message: "Order not found",
+        });
+      }
+
+      // Cập nhật trạng thái đơn hàng
+      order.status = status;
+      await order.save();
+
+      res.status(200).json({
+        success: true,
+        message: "Order status updated successfully",
+        order,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  }
+
   // [DELETE] /order/:id
   async deleteByUser(req, res) {
     try {
@@ -253,7 +298,7 @@ class OrderController {
       }
 
       // Xóa đơn hàng
-      await Order.findByIdAndDelete(order._id)
+      await Order.findByIdAndDelete(order._id);
 
       res.status(200).json({
         success: true,
