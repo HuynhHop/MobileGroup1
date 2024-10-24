@@ -16,7 +16,7 @@ const BookDetail = ({ route, navigation }) => {
   const { product } = route.params;
   const API_URL = process.env.API_URL;
   const [accessToken, setAccessToken] = useState("");
-  console.log("resetAPI2")
+  // console.log("resetAPI2")
   
   useEffect(() => {
     const getToken = async () => {

@@ -253,7 +253,7 @@ class OrderController {
       }
 
       // Xóa đơn hàng
-      await order.delete();
+      await Order.findByIdAndDelete(order._id)
 
       res.status(200).json({
         success: true,

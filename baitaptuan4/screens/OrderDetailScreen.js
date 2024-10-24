@@ -19,6 +19,7 @@ const OrderDetailScreen = ({ route, navigation }) => {
   const [totalQuantity, setTotalQuantity] = useState(0);
   const [checkedItems, setCheckedItems] = useState({});
   const API_URL = process.env.API_URL;
+  console.log("ResetAPI")
 
   const fetchOrderDetails = async () => {
     try {
@@ -76,7 +77,7 @@ const OrderDetailScreen = ({ route, navigation }) => {
         onPress: async () => {
           const accessToken = await AsyncStorage.getItem("@accessToken");
           try {
-            const response = await fetch(`${API_URL}/order/item/${itemId}`, {
+            const response = await fetch(`${API_URL}/cart/items/${itemId}`, {
               method: "DELETE",
               headers: {
                 "Content-Type": "application/json",
@@ -87,7 +88,7 @@ const OrderDetailScreen = ({ route, navigation }) => {
             const data = await response.json();
 
             if (data.success) {
-              fetchOrderDetails(); // Làm mới chi tiết đơn hàng sau khi xóa
+              fetchCartItems(); // Làm mới giỏ hàng sau khi xóa
             } else {
               console.error("Error deleting item:", data.message);
             }

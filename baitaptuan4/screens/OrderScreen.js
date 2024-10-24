@@ -15,7 +15,7 @@ const OrderScreen = ({ navigation }) => {
   const [orders, setOrders] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState('Pending');
   const API_URL = process.env.API_URL;
-  console.log("ResetAPI")
+  // console.log("ResetAPI")
 
   const fetchOrders = async () => {
     const accessToken = await AsyncStorage.getItem("@accessToken");
@@ -50,9 +50,34 @@ const OrderScreen = ({ navigation }) => {
     }, [])
   );
 
-  const handleCancelOrder = (orderId) => {
-    alert(`Cancel Order ${orderId}`);
-    // Add cancel order logic here
+  const handleCancelOrder = async (orderId) => {
+    const accessToken = await AsyncStorage.getItem("@accessToken");
+    try {
+      const response = await fetch(`${API_URL}/order/${orderId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+  
+      const data = await response.json();
+  
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to cancel order");
+      }
+  
+      if (data.success) {
+        // Remove the cancelled order from the list
+        setOrders((prevOrders) => prevOrders.filter(order => order._id !== orderId));
+        alert("Order deleted successfully.");
+      } else {
+        alert(data.message || "Failed to cancel order");
+      }
+    } catch (error) {
+      console.error("Error cancelling order:", error);
+      alert("Error cancelling order.");
+    }
   };
 
   const handleRestoreOrder = (orderId) => {
