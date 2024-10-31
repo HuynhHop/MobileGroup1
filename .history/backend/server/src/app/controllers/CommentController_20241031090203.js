@@ -27,22 +27,16 @@ class CommentController {
       }
 
       // Execute query
-      let queryCommand = Comment.find(formatedQueries)
-        .populate({
-          path: "product", // Populate thông tin product
-          model: "Product",
-          // Chọn các trường cần lấy từ product
-          populate: {
-            path: "categories", // Populate thông tin category của product
-            model: "Category",
-            select: "name", // Chọn trường name của category (có thể thay đổi nếu muốn lấy thêm các trường khác)
-          }, // Populate thông tin category của product
-        })
-        .populate({
-          path: "user", // Populate thông tin user
-          model: "User",
-          select: "username fullname email", // Lấy các trường user cần hiển thị
-        });
+      let queryCommand = Comment.find(formatedQueries).populate({
+        path: "product", // Populate thông tin product
+        model: "Product",
+        // Chọn các trường cần lấy từ product
+        populate: {
+          path: "categories", // Populate thông tin category của product
+          model: "Category",
+          select: "name", // Chọn trường name của category (có thể thay đổi nếu muốn lấy thêm các trường khác)
+        }, // Populate thông tin category của product
+      });
 
       // Sorting
       if (req.query.sort) {
