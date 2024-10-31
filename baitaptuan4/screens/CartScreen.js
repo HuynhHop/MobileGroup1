@@ -21,7 +21,7 @@ const CartScreen = ({ navigation }) => {
   const [totalQuantity, setTotalQuantity] = useState(0);
   const API_URL = process.env.API_URL;
   const [checkedItems, setCheckedItems] = useState({});
-  console.log("abcxyz")
+  console.log("3")
 
   const fetchCartItems = async () => {
     const accessToken = await AsyncStorage.getItem("@accessToken");

@@ -19,7 +19,7 @@ const OrderDetailScreen = ({ route, navigation }) => {
   const [totalQuantity, setTotalQuantity] = useState(0);
   const [checkedItems, setCheckedItems] = useState({});
   const API_URL = process.env.API_URL;
-  console.log("ResetAPI")
+  console.log("5")
 
   const fetchOrderDetails = async () => {
     try {

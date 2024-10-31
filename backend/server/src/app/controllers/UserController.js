@@ -125,8 +125,8 @@ class UserController {
     }
   }
 
-  // [GET] /user/rank
-  async getUserRank(req, res) {
+  // [GET] /user/member
+  async getUserMember(req, res) {
     try {
       const userId = req.user._id; // Lấy userId từ thông tin đã đăng nhập (accessToken)
 
@@ -145,14 +145,10 @@ class UserController {
           .json({ success: false, message: "Member information not found" });
       }
 
-      // Lấy rank từ member
-      const userRank = user.member.rank;
-
       // Trả về rank của user
       return res.status(200).json({
         success: true,
-        rank: userRank,
-        message: `User rank is ${userRank}`,
+        member: user.member,
       });
     } catch (error) {
       return res.status(500).json({
@@ -162,7 +158,7 @@ class UserController {
       });
     }
   }
-
+  
   // [POST] /user/register
   async register(req, res) {
     try {

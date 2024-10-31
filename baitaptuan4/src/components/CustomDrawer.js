@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -11,23 +11,49 @@ import {
   DrawerContentScrollView,
   DrawerItemList,
 } from "@react-navigation/drawer";
-
 import Ionicons from "react-native-vector-icons/Ionicons";
-import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useNavigation } from "@react-navigation/native";
-import { useAuth } from "../hook/authContext"; // Ensure your context provides 'logout'
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import { useAuth } from "../hook/authContext";
 import { API_URL } from "@env";
 
 const CustomDrawer = (props) => {
-  const { user, setIsAuthenticated, setUser } = useAuth(); // Use logout directly
+  const { user, setIsAuthenticated, setUser } = useAuth();
   const navigation = useNavigation();
-  console.log("ResetAPI")
+  const [rank, setRank] = useState(null);
+
+  // Fetch rank from the API
+  const fetchRank = async () => {
+    const accessToken = await AsyncStorage.getItem("@accessToken");
+    try {
+      const response = await fetch(`${API_URL}/user/member`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await response.json();
+      if (response.ok) {
+        // Assuming 'member' includes the rank data
+        setRank(data.member?.rank); // Adjust based on your API response structure
+      } else {
+        console.log("Failed to fetch rank:", data.message);
+      }
+    } catch (error) {
+      console.log("Error fetching rank:", error.message);
+    }
+  };
+
+  // Fetch rank each time the drawer gains focus
+  useFocusEffect(
+    useCallback(() => {
+      fetchRank();
+    }, [])
+  );
 
   const handleLogout = async () => {
     const accessToken = await AsyncStorage.getItem("@accessToken");
-    // const API_URL = process.env.API_URL;
-    console.log("access logout ", accessToken);
     try {
       const response = await fetch(`${API_URL}/user/logout`, {
         method: "GET",
@@ -38,7 +64,6 @@ const CustomDrawer = (props) => {
       });
       await AsyncStorage.removeItem("@accessToken");
       if (response.ok) {
-        // await AsyncStorage.removeItem("@accessToken");
         setIsAuthenticated(false);
         Alert.alert("Success", "Logout successful", [
           {
@@ -83,8 +108,9 @@ const CustomDrawer = (props) => {
             {user?.fullname}
           </Text>
           <View style={{ flexDirection: "row" }}>
-            <Text style={{ color: "#fff", marginRight: 5 }}>280 Coins</Text>
-            <FontAwesome5 name="coins" size={14} color="#fff" />
+            <Text style={{ color: "#fff", marginRight: 5 }}>
+              {rank ? `${rank} Rank` : "UnRank..."}
+            </Text>
           </View>
         </ImageBackground>
         <View style={{ flex: 1, backgroundColor: "#fff", paddingTop: 10 }}>
@@ -99,10 +125,7 @@ const CustomDrawer = (props) => {
           </View>
         </TouchableOpacity>
         {user ? (
-          <TouchableOpacity
-            onPress={handleLogout}
-            style={{ paddingVertical: 15 }}
-          >
+          <TouchableOpacity onPress={handleLogout} style={{ paddingVertical: 15 }}>
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <Ionicons name="exit-outline" size={22} />
               <Text style={{ fontSize: 15, marginLeft: 5 }}>Sign Out</Text>
