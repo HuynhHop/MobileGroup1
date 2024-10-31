@@ -148,7 +148,7 @@ class UserController {
       // Trả về rank của user
       return res.status(200).json({
         success: true,
-        member: user.member,
+        user,
       });
     } catch (error) {
       return res.status(500).json({
