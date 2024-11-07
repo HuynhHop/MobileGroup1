@@ -15,7 +15,7 @@ const OrderScreen = ({ navigation }) => {
   const [orders, setOrders] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState('Pending');
   const API_URL = process.env.API_URL;
-  console.log("4")
+  console.log("4,")
 
   const fetchOrders = async () => {
     const accessToken = await AsyncStorage.getItem("@accessToken");

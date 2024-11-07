@@ -6,6 +6,7 @@ import CustomDrawer from "../components/CustomDrawer";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import TabNavigator from "./TabNavigator";
 import CartScreen from "../../screens/CartScreen";
+import PurchaseHistoryScreen from "../../screens/PurchaseHistoryScreen";
 
 import { useAuth } from "../hook/authContext";
 import OrderScreen from "../../screens/OrderScreen";
@@ -76,6 +77,16 @@ export default function DrawerNavigator() {
             options={{
               drawerIcon: ({ color }) => (
                 <Ionicons name="list" size={22} color={color} />
+              ),
+            }}
+          />
+
+          <Drawer.Screen
+            name="History"
+            component={PurchaseHistoryScreen}
+            options={{
+              drawerIcon: ({ color }) => (
+                <Ionicons name="time-outline" size={22} color={color} />
               ),
             }}
           />

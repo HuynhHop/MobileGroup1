@@ -79,14 +79,16 @@ class OrderController {
     }
   }
 
-  // [GET] /order/
-  async getOrders(req, res) {
+  // [GET] /order/getOrderByUser
+  async getOrdersByUser(req, res) {
     try {
+      const { _id } = req.user; // Extract user ID from the access token (ensure authentication middleware is used)
+
       const queries = { ...req.query };
       const excludeFields = ["limit", "sort", "page", "fields"];
       excludeFields.forEach((el) => delete queries[el]);
 
-      // Format lại các operators cho đúng cú pháp mongoose
+      // Format query operators for Mongoose syntax
       let queryString = JSON.stringify(queries);
       queryString = queryString.replace(
         /\b(gte|gt|lt|lte)\b/g,
@@ -94,14 +96,18 @@ class OrderController {
       );
       const formattedQueries = JSON.parse(queryString);
 
-      // Filtering
+      // Filtering by status with case-insensitive regex
       if (queries?.status) {
         formattedQueries.status = { $regex: queries.status, $options: "i" };
       }
 
+      // Add filter for user ID
+      formattedQueries.user = _id;
+
       let queryCommand = Order.find(formattedQueries).populate({
         path: "details",
         model: "OrderDetail",
+        select: "productId productName productImage productPrice quantity",
       });
 
       // Sorting
@@ -118,7 +124,7 @@ class OrderController {
 
       // Pagination
       const page = +req.query.page || 1;
-      const limit = +req.query.limit || 10; // Default limit
+      const limit = +req.query.limit || 10;
       const skip = (page - 1) * limit;
       queryCommand = queryCommand.skip(skip).limit(limit);
 
@@ -128,15 +134,114 @@ class OrderController {
       // Count total orders for pagination
       const counts = await Order.find(formattedQueries).countDocuments();
 
+      // Map through each order to add imageUrl to each order detail
+      const formattedOrders = orders.map(order => {
+        const formattedDetails = order.details.map(detail => {
+          const imageUrl = detail.productImage
+            ? detail.productImage.startsWith("http")
+              ? detail.productImage
+              : `${req.protocol}://${req.get("host")}/public/images/products/${detail.productImage}`
+            : `${req.protocol}://${req.get("host")}/public/images/products/defaultImage.jpg`;
+          return {
+            ...detail.toObject(),
+            imageUrl,
+          };
+        });
+        return {
+          ...order.toObject(),
+          details: formattedDetails,
+        };
+      });
+
       res.status(200).json({
         success: true,
         counts,
-        orders: orders.length > 0 ? orders : "No orders found",
+        orders: formattedOrders.length > 0 ? formattedOrders : "No orders found",
       });
     } catch (error) {
       res.status(500).json({ success: false, message: error.message });
     }
   }
+
+  // [GET] /order/
+  async getOrders(req, res) {
+    try {
+      const queries = { ...req.query };
+      const excludeFields = ["limit", "sort", "page", "fields"];
+      excludeFields.forEach((el) => delete queries[el]);
+
+      // Format query operators for Mongoose syntax
+      let queryString = JSON.stringify(queries);
+      queryString = queryString.replace(
+        /\b(gte|gt|lt|lte)\b/g,
+        (matchedEl) => `$${matchedEl}`
+      );
+      const formattedQueries = JSON.parse(queryString);
+
+      // Filtering by status with case-insensitive regex
+      if (queries?.status) {
+        formattedQueries.status = { $regex: queries.status, $options: "i" };
+      }
+
+      let queryCommand = Order.find(formattedQueries).populate({
+        path: "details",
+        model: "OrderDetail",
+        select: "productId productName productImage productPrice quantity",
+      });
+
+      // Sorting
+      if (req.query.sort) {
+        const sortBy = req.query.sort.split(",").join(" ");
+        queryCommand = queryCommand.sort(sortBy);
+      }
+
+      // Field Limiting
+      if (req.query.fields) {
+        const fields = req.query.fields.split(",").join(" ");
+        queryCommand = queryCommand.select(fields);
+      }
+
+      // Pagination
+      const page = +req.query.page || 1;
+      const limit = +req.query.limit || 10;
+      const skip = (page - 1) * limit;
+      queryCommand = queryCommand.skip(skip).limit(limit);
+
+      // Execute query
+      const orders = await queryCommand.exec();
+
+      // Count total orders for pagination
+      const counts = await Order.find(formattedQueries).countDocuments();
+
+      // Map through each order to add imageUrl to each order detail
+      const formattedOrders = orders.map(order => {
+        const formattedDetails = order.details.map(detail => {
+          const imageUrl = detail.productImage
+            ? detail.productImage.startsWith("http")
+              ? detail.productImage
+              : `${req.protocol}://${req.get("host")}/public/images/products/${detail.productImage}`
+            : `${req.protocol}://${req.get("host")}/public/images/products/defaultImage.jpg`;
+          return {
+            ...detail.toObject(),
+            imageUrl,
+          };
+        });
+        return {
+          ...order.toObject(),
+          details: formattedDetails,
+        };
+      });
+
+      res.status(200).json({
+        success: true,
+        counts,
+        orders: formattedOrders.length > 0 ? formattedOrders : "No orders found",
+      });
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
+
 
   //[GET] /order/getAll
   async getAllByAdmin(req, res) {

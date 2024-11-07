@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -9,22 +9,21 @@ import {
   Alert,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import Icon from 'react-native-vector-icons/MaterialIcons';
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import Icon from "react-native-vector-icons/MaterialIcons";
+import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
+import { useFocusEffect } from "@react-navigation/native";
 
-const OrderDetailScreen = ({ route, navigation }) => {
-  const { orderId } = route.params; // Nhận orderId từ navigation params
-  const [orderDetails, setOrderDetails] = useState([]);
+const PurchaseHistoryScreen = ({ navigation }) => {
+  const [purchasedOrders, setPurchasedOrders] = useState([]);
+  const [checkedItems, setCheckedItems] = useState({});
   const [totalPrice, setTotalPrice] = useState(0);
   const [totalQuantity, setTotalQuantity] = useState(0);
-  const [checkedItems, setCheckedItems] = useState({});
   const API_URL = process.env.API_URL;
-  console.log("5,")
 
-  const fetchOrderDetails = async () => {
+  const fetchPurchasedOrders = async () => {
     try {
       const accessToken = await AsyncStorage.getItem("@accessToken");
-      const response = await fetch(`${API_URL}/order/${orderId}`, {
+      const response = await fetch(`${API_URL}/order/getOrderByUser?status=Transported`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -35,19 +34,21 @@ const OrderDetailScreen = ({ route, navigation }) => {
       const data = await response.json();
 
       if (data.success) {
-        setOrderDetails(data.orderDetails);
-        setCheckedItems({}); // Reset checked items khi tải lại chi tiết đơn hàng
+        setPurchasedOrders(data.orders);
+        setCheckedItems({});
       } else {
-        console.error("Error fetching order details:", data.message);
+        console.error("Error fetching purchase history:", data.message);
       }
     } catch (error) {
-      console.error("Error fetching order details:", error);
+      console.error("Error fetching purchase history:", error);
     }
   };
 
-  useEffect(() => {
-    fetchOrderDetails();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchPurchasedOrders();
+    }, [])
+  );
 
   const toggleItemChecked = (itemId) => {
     setCheckedItems((prev) => ({
@@ -58,47 +59,26 @@ const OrderDetailScreen = ({ route, navigation }) => {
   };
 
   const calculateTotals = () => {
-    const selectedItems = orderDetails.filter(item => checkedItems[item._id]);
-    const newTotalPrice = selectedItems.reduce((total, item) => total + item.productPrice * item.quantity, 0);
-    const newTotalQuantity = selectedItems.reduce((total, item) => total + item.quantity, 0);
+    const selectedItems = purchasedOrders.filter((order) =>
+      checkedItems[order._id]
+    );
+    const newTotalPrice = selectedItems.reduce(
+      (total, order) => total + order.details[0].productPrice * order.details[0].quantity,
+      0
+    );
+    const newTotalQuantity = selectedItems.reduce(
+      (total, order) => total + order.details[0].quantity,
+      0
+    );
     setTotalQuantity(newTotalQuantity);
     setTotalPrice(newTotalPrice);
   };
 
-  useEffect(() => {
-    calculateTotals();
-  }, [checkedItems]);
-
-  const handleDeleteItem = (itemId) => {
-    Alert.alert("Delete Item", "Are you sure you want to delete this item?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        onPress: async () => {
-          const accessToken = await AsyncStorage.getItem("@accessToken");
-          try {
-            const response = await fetch(`${API_URL}/cart/items/${itemId}`, {
-              method: "DELETE",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${accessToken}`,
-              },
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-              fetchCartItems(); // Làm mới giỏ hàng sau khi xóa
-            } else {
-              console.error("Error deleting item:", data.message);
-            }
-          } catch (error) {
-            console.error("Error deleting item:", error);
-          }
-        },
-      },
-    ]);
-  };
+  useFocusEffect(
+    useCallback(() => {
+      calculateTotals();
+    }, [checkedItems])
+  );
 
   return (
     <ScrollView style={styles.container}>
@@ -106,7 +86,7 @@ const OrderDetailScreen = ({ route, navigation }) => {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Text style={styles.backButton}>{"<"}</Text>
         </TouchableOpacity>
-        <Text style={styles.headerText}>Order Details</Text>
+        <Text style={styles.headerText}>Purchase History</Text>
         <TouchableOpacity>
           <Image
             source={require("../assets/images/user-profile.jpg")}
@@ -115,12 +95,12 @@ const OrderDetailScreen = ({ route, navigation }) => {
         </TouchableOpacity>
       </View>
 
-      {orderDetails.length > 0 ? (
-        orderDetails.map((item) => (
-          <View key={item._id} style={styles.orderItem}>
-            <TouchableOpacity onPress={() => toggleItemChecked(item._id)}>
+      {purchasedOrders.length > 0 ? (
+        purchasedOrders.map((order) => (
+          <View key={order._id} style={styles.orderItem}>
+            <TouchableOpacity onPress={() => toggleItemChecked(order._id)}>
               <View style={styles.checkbox}>
-                {checkedItems[item._id] ? (
+                {checkedItems[order._id] ? (
                   <Text style={styles.checked}>✔️</Text>
                 ) : (
                   <Text style={styles.unchecked}>⬜️</Text>
@@ -128,35 +108,36 @@ const OrderDetailScreen = ({ route, navigation }) => {
               </View>
             </TouchableOpacity>
             <Image
-              source={{ uri: item.imageUrl }}
+              source={{ uri: order.details[0].imageUrl }}
               style={styles.productImage}
             />
             <View style={styles.productDetails}>
-              <Text>{item.productName}</Text>
-              <Text>
-                {item.productPrice.toFixed(2)}{"  "}
+              <Text style={styles.productName}>{order.details[0].productName}</Text>
+              <Text style={styles.productPrice}>
+                {order.details[0].productPrice.toFixed(2)}{"  "}
                 <FontAwesome5 name="coins" size={20} color="#CDAD00" />
               </Text>
-              <Text>Quantity: {item.quantity}</Text>
+              <Text>Quantity: {order.details[0].quantity}</Text>
+              <Text>Status: {order.status}</Text>
             </View>
             <TouchableOpacity
               style={styles.detailButton}
-              onPress={() => navigation.navigate('BookDetail', {  product: item })}
+              onPress={() =>
+                navigation.navigate('BookDetail', {  product: order.details[0]})
+              }
             >
-              <Text style={styles.detailButtonText}>Detail</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => handleDeleteItem(item._id)}>
-              <Icon name="delete" size={24} color="#FF0000" />
+              <Text style={styles.detailButtonText}>Details</Text>
             </TouchableOpacity>
           </View>
         ))
       ) : (
-        <Text>No order details found.</Text>
+        <Text>No purchase history found.</Text>
       )}
 
       <View style={styles.orderSummary}>
         <Text>Total Items: {totalQuantity}</Text>
-        <Text>Total Price: {totalPrice.toFixed(2)}{"  "}
+        <Text>
+          Total Price: {totalPrice.toFixed(2)}{"  "}
           <FontAwesome5 name="coins" size={20} color="#CDAD00" />
         </Text>
       </View>
@@ -183,11 +164,6 @@ const styles = StyleSheet.create({
   headerText: {
     fontSize: 20,
     fontWeight: "bold",
-  },
-  userIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
   },
   orderItem: {
     flexDirection: "row",
@@ -219,6 +195,19 @@ const styles = StyleSheet.create({
   productDetails: {
     flex: 1,
   },
+  productName: {
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  userIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
+  productPrice: {
+    fontSize: 14,
+    color: "#333",
+  },
   detailButton: {
     marginRight: 8,
     backgroundColor: "#007BFF",
@@ -237,4 +226,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default OrderDetailScreen;
+export default PurchaseHistoryScreen;
