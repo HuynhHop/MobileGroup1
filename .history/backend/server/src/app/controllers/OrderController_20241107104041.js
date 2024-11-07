@@ -383,6 +383,7 @@ class OrderController {
       // Kiểm tra rank của user để áp dụng giảm giá
       const userInfo = await User.findById(user._id);
       const member = await Member.findById(userInfo.member); // Lấy thông tin member của user
+      console.log(member.rank);
       if (member) {
         if (member.rank === "Silver") {
           totalPrice *= 0.98; // Giảm 2%
