@@ -95,8 +95,10 @@ class OrderController {
       const formattedQueries = JSON.parse(queryString);
 
       // Filtering
+
+      // Filtering
       if (queries?.status) {
-        formattedQueries.status = { $regex: queries.status, $options: "i" };
+        formatedQueries.status = { $regex: queries.status, $options: "i" };
       }
 
       let queryCommand = Order.find(formattedQueries).populate({

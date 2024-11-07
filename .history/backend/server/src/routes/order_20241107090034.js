@@ -14,7 +14,7 @@ router.get(
   orderController.getAllByAdmin
 );
 router.get("/:id", [verifyAccessToken], orderController.getById);
-router.get("/", [verifyAccessToken], orderController.getOrders);
+router.get("/:", [verifyAccessToken], orderController.getOrders);
 
 router.post("/checkout", [verifyAccessToken], orderController.checkout);
 router.put(

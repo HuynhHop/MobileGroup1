@@ -13,7 +13,7 @@ const productSchema = new Schema(
   {
     _id: { type: Number },
     name: { type: String, maxLength: 255, required: true },
-    image: { type: String },
+    image: { type: String, maxLength: 255 },
     description: { type: String, maxLength: 600 },
     price: { type: Number, required: true },
     datePublic: { type: Date },
