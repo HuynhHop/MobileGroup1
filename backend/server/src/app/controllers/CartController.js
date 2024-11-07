@@ -3,6 +3,9 @@ const LineItem = require("../models/LineItem");
 const Product = require("../models/Product");
 const Order = require("../models/Order");
 const OrderDetail = require("../models/OrderDetail");
+const User = require("../models/User");
+const Member = require("../models/Member");
+const { Payment } = require("../models/Payment");
 class CartController {
   //[GET] /cart
   async getCart(req, res) {
@@ -165,9 +168,14 @@ class CartController {
   //[POST] /cart/checkout
   async checkout(req, res) {
     try {
-      const user = req.user; // Get user info from accessToken
-      
-      // Find the cart for the current user
+      const user = req.user; // Lấy thông tin user từ accessToken
+      // const payment = req.body.payment;
+      // if (!payment) {
+      //   return res
+      //     .status(400)
+      //     .json({ success: false, message: "Payment method not provided" });
+      // }
+
       let cart = await Cart.findOne({ user: user._id }).populate({
         path: "items",
         select: "selectedForCheckout quantity",
@@ -179,7 +187,9 @@ class CartController {
       });
 
       if (!cart) {
-        return res.status(400).json({ success: false, message: "Cart not found" });
+        return res
+          .status(400)
+          .json({ success: false, message: "Cart not found" });
       }
 
       const selectedItems = cart.items.filter(
@@ -192,11 +202,12 @@ class CartController {
           .json({ success: false, message: "No items selected for checkout" });
       }
 
-      // Array to store saved OrderDetail IDs
+      // Mảng lưu trữ các _id của OrderDetail đã lưu
       const orderDetailsIds = [];
 
-      // Loop through selected items to create OrderDetails
+      // Vòng lặp for để tạo OrderDetail cho mỗi item
       for (const item of selectedItems) {
+        // Tạo OrderDetail
         const orderDetail = new OrderDetail({
           productId: item.product._id,
           productName: item.product.name,
@@ -205,35 +216,53 @@ class CartController {
           quantity: item.quantity,
         });
 
+        // Lưu OrderDetail vào cơ sở dữ liệu
         const savedOrderDetail = await orderDetail.save();
         orderDetailsIds.push(savedOrderDetail._id);
 
         await Product.findByIdAndUpdate(
           item.product._id,
-          { $inc: { soldCount: item.quantity } }, // Increment soldCount by quantity
-          { new: true }
+          { $inc: { soldCount: item.quantity } }, // Cộng thêm số lượng đã bán vào soldCount
+          { new: true } // Trả về tài liệu đã được cập nhật
         );
       }
 
-      const totalPrice = selectedItems.reduce(
+      // Tính tổng giá trị của các sản phẩm đã chọn
+      let totalPrice = selectedItems.reduce(
         (acc, item) => acc + item.product.price * item.quantity,
         0
       );
+      // Kiểm tra rank của user để áp dụng giảm giá
+      const userInfo = await User.findById(user._id);
+      const member = await Member.findById(userInfo.member); // Lấy thông tin member của user
+      if (member) {
+        if (member.rank === "Silver") {
+          totalPrice *= 0.98; // Giảm 2%
+        } else if (member.rank === "Gold") {
+          totalPrice *= 0.95; // Giảm 5%
+        } else if (member.rank === "Diamond") {
+          totalPrice *= 0.9; // Giảm 10%
+        }
+      }
 
+      // Tạo đơn hàng mới
       const newOrder = await Order.create({
         details: orderDetailsIds,
         date: new Date(),
         status: "Pending",
-        totalPrice: totalPrice,
+        totalPrice: totalPrice.toFixed(2), // Làm tròn 2 chữ số thập phân
+        // payment: Payment.OFFLINE, // Payment information từ client
         user: user._id,
       });
 
-      // Optionally remove checked-out items from the cart
-      const itemsToRemove = cart.items.filter((item) => item.selectedForCheckout);
+      // Nếu cần, bạn có thể xóa các item đã checkout khỏi giỏ hàng
+      const itemsToRemove = cart.items.filter(
+        (item) => item.selectedForCheckout
+      );
       cart.items = cart.items.filter((item) => !item.selectedForCheckout);
       await cart.save();
 
-      // Delete corresponding LineItems from the database
+      // Xóa các LineItem tương ứng khỏi cơ sở dữ liệu
       for (const item of itemsToRemove) {
         await LineItem.findByIdAndDelete(item._id);
       }
