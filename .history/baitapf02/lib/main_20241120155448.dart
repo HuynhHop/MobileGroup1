@@ -45,7 +45,6 @@
 //   }
 // }
 
-import 'package:baitapf02/Screen/AddPublisherScreen.dart';
 import 'package:baitapf02/Screen/EditPublisherScreen.dart';
 import 'package:baitapf02/Screen/OTP_screen.dart';
 import 'package:baitapf02/Screen/forget_password_screen.dart';
@@ -95,8 +94,8 @@ class MyApp extends StatelessWidget {
             AddCategoryScreen(), // Thêm route cho màn hình add
 
         '/publisher': (context) => PublisherScreen(),
-        '/add-publisher': (context) =>
-            AddPublisherScreen(), // Thêm route cho màn hình add
+        '/add-category': (context) =>
+            AddCategoryScreen(), // Thêm route cho màn hình add
         '/edit-publisher': (context) {
           final args = ModalRoute.of(context)!.settings.arguments
               as Map<String, dynamic>;
