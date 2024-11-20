@@ -109,7 +109,7 @@ class ManagerScreen extends StatelessWidget {
             SizedBox(height: 40), // Khoảng cách trên cùng
             CircleAvatar(
               radius: 80, // Kích thước lớn hơn cho ảnh đại diện
-              backgroundImage: NetworkImage(userData['image']),
+              //backgroundImage: NetworkImage(userData['image']),
               backgroundColor: Colors.grey[300],
             ),
             SizedBox(height: 20),
@@ -125,7 +125,7 @@ class ManagerScreen extends StatelessWidget {
                 mainAxisSpacing: 20, // Tăng khoảng cách giữa các hàng
                 padding: EdgeInsets.all(40), // Tăng padding xung quanh
                 children: [
-                  _buildGridItem(context, Icons.person, 'User', null),
+                  _buildGridItem(context, Icons.person, 'User', '/user_manager'),
                   _buildGridItem(context, Icons.book, 'Product', null),
                   _buildGridItem(context, Icons.person_outline, 'Author', null),
                   _buildGridItem(
