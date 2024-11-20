@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ManagerScreen extends StatelessWidget {
+  final storage = FlutterSecureStorage();
+
   @override
   Widget build(BuildContext context) {
     // Nhận userData từ arguments
@@ -12,10 +17,24 @@ class ManagerScreen extends StatelessWidget {
         title: const Text('Manager Dashboard'),
         backgroundColor: Colors.deepPurple,
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout,
+                color: Colors.white), // Màu icon logout
+            tooltip: 'Logout',
+            onPressed: () async {
+              bool success = await handleLogout(context);
+              if (success) {
+                Navigator.pushNamedAndRemoveUntil(
+                    context, '/login', (route) => false); // Quay về trang login
+              }
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [
-          const SizedBox(height: 20), // Khoảng cách trên cùng
+          const SizedBox(height: 20),
           CircleAvatar(
             radius: 60, // Kích thước vừa phải cho ảnh đại diện
             backgroundImage: NetworkImage(userData['image']),
@@ -34,11 +53,10 @@ class ManagerScreen extends StatelessWidget {
               mainAxisSpacing: 20, // Khoảng cách giữa các hàng
               padding: const EdgeInsets.all(10),
               children: [
-                _buildGridItem(context, Icons.person, 'User', '/user_manager'),
+                _buildGridItem(context, Icons.person, 'User', null),
                 _buildGridItem(context, Icons.book, 'Product', null),
                 _buildGridItem(context, Icons.person_outline, 'Author', null),
-                _buildGridItem(
-                    context, Icons.library_books, 'Publisher', '/publisher'),
+                _buildGridItem(context, Icons.library_books, 'Publisher', null),
                 _buildGridItem(context, Icons.shopping_cart, 'Order', null),
                 _buildGridItem(context, Icons.category, 'Category',
                     '/category'), // Điều hướng tới trang Category
@@ -60,7 +78,7 @@ class ManagerScreen extends StatelessWidget {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white, // Nền trắng giúp icon dễ nhìn hơn
+          color: Colors.white, // Thay nền màu trắng để icon dễ nhìn hơn
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
@@ -89,6 +107,54 @@ class ManagerScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<bool> handleLogout(BuildContext context) async {
+    final apiUrl = dotenv.env['API_URL'];
+    if (apiUrl == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("API URL not configured")),
+      );
+      return false;
+    }
+
+    try {
+      final token = await storage.read(key: "accessToken");
+
+      if (token == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("No token found")),
+        );
+        return false;
+      }
+
+      final response = await http.get(
+        Uri.parse('$apiUrl/user/logout'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // Xóa token khỏi storage
+        await storage.delete(key: "accessToken");
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Logged out successfully")),
+        );
+        return true;
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Logout failed: ${response.body}")),
+        );
+        return false;
+      }
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("An error occurred: $error")),
+      );
+      return false;
+    }
   }
 }
 
@@ -207,46 +273,6 @@ class ManagerScreen extends StatelessWidget {
 //     try {
 //       final token = await storage.read(key: "accessToken");
 
-
-//     return Scaffold(
-//       body: Center(
-//         child: Column(
-//           children: [
-//             SizedBox(height: 40), // Khoảng cách trên cùng
-//             CircleAvatar(
-//               radius: 80, // Kích thước lớn hơn cho ảnh đại diện
-//               //backgroundImage: NetworkImage(userData['image']),
-//               backgroundColor: Colors.grey[300],
-//             ),
-//             SizedBox(height: 20),
-//             Text(
-//               "Welcome, ${userData['fullname']}", // Hiển thị tên người dùng
-//               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-//             ),
-//             SizedBox(height: 30),
-//             Expanded(
-//               child: GridView.count(
-//                 crossAxisCount: 4, // Hiển thị 4 cột thay vì 3 để phù hợp PC
-//                 crossAxisSpacing: 20, // Tăng khoảng cách giữa các cột
-//                 mainAxisSpacing: 20, // Tăng khoảng cách giữa các hàng
-//                 padding: EdgeInsets.all(40), // Tăng padding xung quanh
-//                 children: [
-//                   _buildGridItem(context, Icons.person, 'User', '/user_manager'),
-//                   _buildGridItem(context, Icons.book, 'Product', null),
-//                   _buildGridItem(context, Icons.person_outline, 'Author', null),
-//                   _buildGridItem(
-//                       context, Icons.library_books, 'Publisher', null),
-//                   _buildGridItem(context, Icons.shopping_cart, 'Order', null),
-//                   _buildGridItem(context, Icons.category, 'Category',
-//                       '/category'), // Điều hướng tới trang Category
-//                 ],
-//               ),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
 //       final response = await http.get(
 //         Uri.parse('$apiUrl/user/logout'),
 //         headers: {

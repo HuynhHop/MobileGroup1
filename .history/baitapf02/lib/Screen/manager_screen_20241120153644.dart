@@ -34,7 +34,7 @@ class ManagerScreen extends StatelessWidget {
               mainAxisSpacing: 20, // Khoảng cách giữa các hàng
               padding: const EdgeInsets.all(10),
               children: [
-                _buildGridItem(context, Icons.person, 'User', '/user_manager'),
+                _buildGridItem(context, Icons.person, 'User', null),
                 _buildGridItem(context, Icons.book, 'Product', null),
                 _buildGridItem(context, Icons.person_outline, 'Author', null),
                 _buildGridItem(
@@ -207,46 +207,6 @@ class ManagerScreen extends StatelessWidget {
 //     try {
 //       final token = await storage.read(key: "accessToken");
 
-
-//     return Scaffold(
-//       body: Center(
-//         child: Column(
-//           children: [
-//             SizedBox(height: 40), // Khoảng cách trên cùng
-//             CircleAvatar(
-//               radius: 80, // Kích thước lớn hơn cho ảnh đại diện
-//               //backgroundImage: NetworkImage(userData['image']),
-//               backgroundColor: Colors.grey[300],
-//             ),
-//             SizedBox(height: 20),
-//             Text(
-//               "Welcome, ${userData['fullname']}", // Hiển thị tên người dùng
-//               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-//             ),
-//             SizedBox(height: 30),
-//             Expanded(
-//               child: GridView.count(
-//                 crossAxisCount: 4, // Hiển thị 4 cột thay vì 3 để phù hợp PC
-//                 crossAxisSpacing: 20, // Tăng khoảng cách giữa các cột
-//                 mainAxisSpacing: 20, // Tăng khoảng cách giữa các hàng
-//                 padding: EdgeInsets.all(40), // Tăng padding xung quanh
-//                 children: [
-//                   _buildGridItem(context, Icons.person, 'User', '/user_manager'),
-//                   _buildGridItem(context, Icons.book, 'Product', null),
-//                   _buildGridItem(context, Icons.person_outline, 'Author', null),
-//                   _buildGridItem(
-//                       context, Icons.library_books, 'Publisher', null),
-//                   _buildGridItem(context, Icons.shopping_cart, 'Order', null),
-//                   _buildGridItem(context, Icons.category, 'Category',
-//                       '/category'), // Điều hướng tới trang Category
-//                 ],
-//               ),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
 //       final response = await http.get(
 //         Uri.parse('$apiUrl/user/logout'),
 //         headers: {
