@@ -486,7 +486,7 @@ class OrderController {
       });
     }
   }
-  //GET /order/byTime?startTime=2023-01-01&endTime=2023-01-31
+
   async getOrdersByTimes(req, res) {
     try {
       const { _id } = req.user; // Lấy user ID từ access token (phải có middleware xác thực trước đó)

@@ -13,16 +13,7 @@ router.get(
   [verifyAccessToken, isAdmin],
   orderController.getAllByAdmin
 );
-router.get(
-  "/getOrderByUser",
-  [verifyAccessToken],
-  orderController.getOrdersByUser
-);
-router.get(
-  "/byTime",
-  [verifyAccessToken, isAdmin],
-  orderController.getOrdersByTimes
-);
+router.get("/getOrderByUser", [verifyAccessToken], orderController.getOrdersByUser);
 router.get("/:id", [verifyAccessToken], orderController.getById);
 router.get("/", [verifyAccessToken], orderController.getOrders);
 
