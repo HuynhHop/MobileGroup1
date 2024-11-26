@@ -8,6 +8,44 @@ const Member = require("../models/Member");
 
 class OrderController {
   // [GET] /order/:id
+  // async getById(req, res) {
+  //   try {
+  //     // Tìm đơn hàng theo ID và populate chi tiết đơn hàng
+  //     let order = await Order.findOne({ _id: req.params.id }).populate({
+  //       path: "details",
+  //       model: "OrderDetail",
+  //       select: "productId productName productImage productPrice quantity", // Lấy các trường cần thiết
+  //     });
+  //     let response;
+  //     if (order) {
+  //       // Duyệt qua từng chi tiết đơn hàng để tạo imageUrl cho mỗi sản phẩm
+  //       response = order.details.map((detail) => {
+  //         // Kiểm tra nếu sản phẩm có hình ảnh, tạo URL đầy đủ
+  //         const imageUrl = detail.productImage
+  //           ? detail.productImage.startsWith("http")
+  //             ? detail.productImage // Nếu đã là URL đầy đủ
+  //             : `${req.protocol}://${req.get("host")}/public/images/products/${
+  //                 detail.productImage
+  //               }` // Nếu chỉ là tên file, tạo URL
+  //           : `${req.protocol}://${req.get(
+  //               "host"
+  //             )}/public/images/products/defaultImage.jpg`; // Ảnh mặc định nếu không có
+
+  //         // Trả về chi tiết đơn hàng với trường imageUrl đã thêm
+  //         return {
+  //           ...detail.toObject(), // Sao chép tất cả thông tin gốc của sản phẩm
+  //           imageUrl, // Thêm thuộc tính imageUrl
+  //         };
+  //       });
+  //     }
+
+  //     // Trả về chi tiết đơn hàng với các imageUrl được tạo
+  //     res.status(200).json({ success: true, orderDetails: response });
+  //   } catch (error) {
+  //     // Xử lý lỗi và trả về phản hồi lỗi
+  //     res.status(500).json({ success: false, message: error.message });
+  //   }
+  // }
 
   async getById(req, res) {
     try {
@@ -18,6 +56,7 @@ class OrderController {
         populate: {
           path: "productId", // Tham chiếu đến bảng Product
           model: "Product",
+          select: "name image price description", // Chỉ lấy các trường cần thiết từ Product
         },
       });
 
