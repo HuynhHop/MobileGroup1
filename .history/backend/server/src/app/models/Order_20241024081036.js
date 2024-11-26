@@ -17,10 +17,9 @@ const orderSchema = new Schema(
     date: { type: Date, required: true },
     status: { type: String, maxLength: 255, required: true },
     // totalPrice: { type: Number, required: true, default: Payment.OFFLINE },
-    totalPrice: { type: Number, required: true },
+    totalPrice: { type: Number, required: true},
     payment: { type: String, enum: Object.values(Payment) },
     user: { type: Number, ref: "User", required: true },
-    isDelivered: { type: Boolean, default: false },
   },
 
   { timestamps: true }
