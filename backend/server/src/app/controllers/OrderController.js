@@ -10,36 +10,45 @@ class OrderController {
   // [GET] /order/:id
   async getById(req, res) {
     try {
-      // Tìm đơn hàng theo ID và populate chi tiết đơn hàng
+      // Tìm đơn hàng theo ID và populate cả chi tiết đơn hàng và thông tin sản phẩm
       let order = await Order.findOne({ _id: req.params.id }).populate({
         path: "details",
         model: "OrderDetail",
-        select: "productId productName productImage productPrice quantity", // Lấy các trường cần thiết
+        populate: {
+          path: "productId", // Tham chiếu đến bảng Product
+          model: "Product"
+        },
       });
-      let response;
-      if (order) {
-        // Duyệt qua từng chi tiết đơn hàng để tạo imageUrl cho mỗi sản phẩm
-        response = order.details.map((detail) => {
-          // Kiểm tra nếu sản phẩm có hình ảnh, tạo URL đầy đủ
-          const imageUrl = detail.productImage
-            ? detail.productImage.startsWith("http")
-              ? detail.productImage // Nếu đã là URL đầy đủ
-              : `${req.protocol}://${req.get("host")}/public/images/products/${
-                  detail.productImage
-                }` // Nếu chỉ là tên file, tạo URL
-            : `${req.protocol}://${req.get(
-                "host"
-              )}/public/images/products/defaultImage.jpg`; // Ảnh mặc định nếu không có
 
-          // Trả về chi tiết đơn hàng với trường imageUrl đã thêm
-          return {
-            ...detail.toObject(), // Sao chép tất cả thông tin gốc của sản phẩm
-            imageUrl, // Thêm thuộc tính imageUrl
-          };
-        });
+      if (!order) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Order not found" });
       }
 
-      // Trả về chi tiết đơn hàng với các imageUrl được tạo
+      // Xử lý các chi tiết đơn hàng để thêm trường imageUrl
+      const response = order.details.map((detail) => {
+        const product = detail.productId; // Thông tin sản phẩm đã được populate
+        const imageUrl = product?.image
+          ? product.image.startsWith("http")
+            ? product.image
+            : `${req.protocol}://${req.get("host")}/public/images/products/${
+                product.image
+              }`
+          : `${req.protocol}://${req.get(
+              "host"
+            )}/public/images/products/defaultImage.jpg`;
+
+        return {
+          ...detail.toObject(),
+          product: {
+            ...product.toObject(), // Thêm thông tin sản phẩm
+            imageUrl, // Thêm trường imageUrl
+          },
+        };
+      });
+
+      // Trả về chi tiết đơn hàng với sản phẩm
       res.status(200).json({ success: true, orderDetails: response });
     } catch (error) {
       // Xử lý lỗi và trả về phản hồi lỗi
@@ -80,93 +89,115 @@ class OrderController {
   }
 
   // [GET] /order/getOrderByUser
-  async getOrdersByUser(req, res) {
-    try {
-      const { _id } = req.user; // Extract user ID from the access token (ensure authentication middleware is used)
+  // [GET] /order/getOrderByUser
+async getOrdersByUser(req, res) {
+  try {
+    const { _id } = req.user; // Extract user ID from the access token (ensure authentication middleware is used)
 
-      const queries = { ...req.query };
-      const excludeFields = ["limit", "sort", "page", "fields"];
-      excludeFields.forEach((el) => delete queries[el]);
+    const queries = { ...req.query };
+    const excludeFields = ["limit", "sort", "page", "fields"];
+    excludeFields.forEach((el) => delete queries[el]);
 
-      // Format query operators for Mongoose syntax
-      let queryString = JSON.stringify(queries);
-      queryString = queryString.replace(
-        /\b(gte|gt|lt|lte)\b/g,
-        (matchedEl) => `$${matchedEl}`
-      );
-      const formattedQueries = JSON.parse(queryString);
+    // Format query operators for Mongoose syntax
+    let queryString = JSON.stringify(queries);
+    queryString = queryString.replace(
+      /\b(gte|gt|lt|lte)\b/g,
+      (matchedEl) => `$${matchedEl}`
+    );
+    const formattedQueries = JSON.parse(queryString);
 
-      // Filtering by status with case-insensitive regex
-      if (queries?.status) {
-        formattedQueries.status = { $regex: queries.status, $options: "i" };
-      }
+    // Filtering by status with case-insensitive regex
+    if (queries?.status) {
+      formattedQueries.status = { $regex: queries.status, $options: "i" };
+    }
 
-      // Add filter for user ID
-      formattedQueries.user = _id;
+    // Add filter for user ID
+    formattedQueries.user = _id;
 
-      let queryCommand = Order.find(formattedQueries).populate({
-        path: "details",
-        model: "OrderDetail",
-        select: "productId productName productImage productPrice quantity",
-      });
+    let queryCommand = Order.find(formattedQueries).populate({
+      path: "details",
+      model: "OrderDetail",
+      populate: {
+        path: "productId", // Tham chiếu đến bảng Product
+        model: "Product",
+      },
+    });
 
-      // Sorting
-      if (req.query.sort) {
-        const sortBy = req.query.sort.split(",").join(" ");
-        queryCommand = queryCommand.sort(sortBy);
-      }
+    // Sorting
+    if (req.query.sort) {
+      const sortBy = req.query.sort.split(",").join(" ");
+      queryCommand = queryCommand.sort(sortBy);
+    }
 
-      // Field Limiting
-      if (req.query.fields) {
-        const fields = req.query.fields.split(",").join(" ");
-        queryCommand = queryCommand.select(fields);
-      }
+    // Field Limiting
+    if (req.query.fields) {
+      const fields = req.query.fields.split(",").join(" ");
+      queryCommand = queryCommand.select(fields);
+    }
 
-      // Pagination
-      const page = +req.query.page || 1;
-      const limit = +req.query.limit || 10;
-      const skip = (page - 1) * limit;
-      queryCommand = queryCommand.skip(skip).limit(limit);
+    // Pagination
+    const page = +req.query.page || 1;
+    const limit = +req.query.limit || 10;
+    const skip = (page - 1) * limit;
+    queryCommand = queryCommand.skip(skip).limit(limit);
 
-      // Execute query
-      const orders = await queryCommand.exec();
+    // Execute query
+    const orders = await queryCommand.exec();
 
-      // Count total orders for pagination
-      const counts = await Order.find(formattedQueries).countDocuments();
+    // Count total orders for pagination
+    const counts = await Order.find(formattedQueries).countDocuments();
 
-      // Map through each order to add imageUrl to each order detail
-      const formattedOrders = orders.map((order) => {
-        const formattedDetails = order.details.map((detail) => {
-          const imageUrl = detail.productImage
-            ? detail.productImage.startsWith("http")
-              ? detail.productImage
-              : `${req.protocol}://${req.get("host")}/public/images/products/${
-                  detail.productImage
-                }`
-            : `${req.protocol}://${req.get(
-                "host"
-              )}/public/images/products/defaultImage.jpg`;
-          return {
-            ...detail.toObject(),
-            imageUrl,
-          };
-        });
+    // Map through each order to add imageUrl to each order detail and productId
+    const formattedOrders = orders.map((order) => {
+      const formattedDetails = order.details.map((detail) => {
+        // Add imageUrl for productImage in OrderDetail
+        const detailImageUrl = detail.productImage
+          ? detail.productImage.startsWith("http")
+            ? detail.productImage
+            : `${req.protocol}://${req.get("host")}/public/images/products/${
+                detail.productImage
+              }`
+          : `${req.protocol}://${req.get(
+              "host"
+            )}/public/images/products/defaultImage.jpg`;
+
+        // Add imageUrl for productId (Product)
+        const productImageUrl = detail.productId.image
+          ? detail.productId.image.startsWith("http")
+            ? detail.productId.image
+            : `${req.protocol}://${req.get("host")}/public/images/products/${
+                detail.productId.image
+              }`
+          : `${req.protocol}://${req.get(
+              "host"
+            )}/public/images/products/defaultImage.jpg`;
+
         return {
-          ...order.toObject(),
-          details: formattedDetails,
+          ...detail.toObject(),
+          imageUrl: detailImageUrl,
+          productId: {
+            ...detail.productId.toObject(),
+            imageUrl: productImageUrl, // Add imageUrl to productId
+          },
         };
       });
+      return {
+        ...order.toObject(),
+        details: formattedDetails,
+      };
+    });
 
-      res.status(200).json({
-        success: true,
-        counts,
-        orders:
-          formattedOrders.length > 0 ? formattedOrders : "No orders found",
-      });
-    } catch (error) {
-      res.status(500).json({ success: false, message: error.message });
-    }
+    res.status(200).json({
+      success: true,
+      counts,
+      orders:
+        formattedOrders.length > 0 ? formattedOrders : "No orders found",
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
+}
+
 
   // [GET] /order/
   async getOrders(req, res) {

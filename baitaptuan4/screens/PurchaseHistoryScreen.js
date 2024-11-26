@@ -19,6 +19,7 @@ const PurchaseHistoryScreen = ({ navigation }) => {
   const [totalPrice, setTotalPrice] = useState(0);
   const [totalQuantity, setTotalQuantity] = useState(0);
   const API_URL = process.env.API_URL;
+  console.log("10")
 
   const fetchPurchasedOrders = async () => {
     try {
@@ -123,7 +124,7 @@ const PurchaseHistoryScreen = ({ navigation }) => {
             <TouchableOpacity
               style={styles.detailButton}
               onPress={() =>
-                navigation.navigate('BookDetail', {  product: order.details[0]})
+                navigation.navigate('BookDetail', {  product: order.details[0].productId})
               }
             >
               <Text style={styles.detailButtonText}>Details</Text>
