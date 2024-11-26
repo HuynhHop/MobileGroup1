@@ -13,18 +13,6 @@ mongoose.plugin(mongooseSlugUpdater);
 const orderSchema = new Schema(
   {
     _id: { type: Number },
-    recipientName: { type: String, required: true },
-    recipientPhone: {
-      type: String,
-      required: true,
-      validate: {
-        validator: function (v) {
-          return /^\d{10}$/.test(v); // kiểm tra nếu chuỗi số điện thoại có đúng 10 số
-        },
-        message: (props) => `${props.value} is not a valid phone number!`,
-      },
-    },
-    shippingAddress: { type: String, required: true },
     details: [{ type: Number, ref: "OrderDetail" }],
     date: { type: Date, required: true },
     status: { type: String, maxLength: 255, required: true },

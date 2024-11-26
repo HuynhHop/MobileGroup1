@@ -21,68 +21,7 @@ const CartScreen = ({ navigation }) => {
   const [totalQuantity, setTotalQuantity] = useState(0);
   const API_URL = process.env.API_URL;
   const [checkedItems, setCheckedItems] = useState({});
-  const [finalPrice, setFinalPrice] = useState(0);
-  const [rank, setRank] = useState("");
-  console.log("3,3")
-
-  const rankDiscount = {
-    Silver: 0.98,
-    Gold: 0.95,
-    Diamond: 0.9,
-  };
-
-  const fetchRank = async () => {
-    const accessToken = await AsyncStorage.getItem("@accessToken");
-    try {
-      const response = await fetch(`${API_URL}/user/member`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-      });
-      const data = await response.json();
-
-      if (response.ok) {
-        setRank(data.member?.rank); // Adjust based on your API response
-      } else {
-        console.log("Failed to fetch rank:", data.message);
-      }
-    } catch (error) {
-      console.log("Error fetching rank:", error.message);
-    }
-  };
-  const [finalPrice, setFinalPrice] = useState(0);
-  const [rank, setRank] = useState("");
-  console.log("3,3");
-
-  const rankDiscount = {
-    Silver: 0.98,
-    Gold: 0.95,
-    Diamond: 0.9,
-  };
-
-  const fetchRank = async () => {
-    const accessToken = await AsyncStorage.getItem("@accessToken");
-    try {
-      const response = await fetch(`${API_URL}/user/member`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-      });
-      const data = await response.json();
-
-      if (response.ok) {
-        setRank(data.member?.rank); // Adjust based on your API response
-      } else {
-        console.log("Failed to fetch rank:", data.message);
-      }
-    } catch (error) {
-      console.log("Error fetching rank:", error.message);
-    }
-  };
+  console.log("3,");
 
   const fetchCartItems = async () => {
     const accessToken = await AsyncStorage.getItem("@accessToken");
@@ -114,8 +53,7 @@ const CartScreen = ({ navigation }) => {
 
   useFocusEffect(
     React.useCallback(() => {
-      fetchCartItems();
-      fetchRank(); // Lấy dữ liệu giỏ hàng mỗi khi màn hình CartScreen được focus
+      fetchCartItems(); // Lấy dữ liệu giỏ hàng mỗi khi màn hình CartScreen được focus
     }, [])
   );
 
@@ -131,9 +69,6 @@ const CartScreen = ({ navigation }) => {
     );
     setTotalPrice(newTotalPrice);
     setTotalQuantity(newTotalQuantity);
-
-    const discount = rankDiscount[rank] || 1;
-    setFinalPrice(newTotalPrice * discount);
   };
 
   const toggleItemChecked = async (itemId) => {
@@ -307,11 +242,6 @@ const CartScreen = ({ navigation }) => {
         <Text>Total Items: {totalQuantity}</Text>
         <Text>
           Total Price: {totalPrice.toFixed(2)}
-          {"  "}
-          <FontAwesome5 name="coins" size={20} color="#CDAD00" />
-        </Text>
-        <Text>
-          Final Price: {finalPrice.toFixed(2)}
           {"  "}
           <FontAwesome5 name="coins" size={20} color="#CDAD00" />
         </Text>

@@ -32,6 +32,13 @@ router.put(
   [verifyAccessToken, isAdmin],
   orderController.updateStatus
 );
-router.delete("/:id", verifyAccessToken, orderController.deleteByUser);
+
+router.put(
+  "/updateIsDelivered/:id",
+  [verifyAccessToken, isAdmin],
+  orderController.updateIsDelivered
+);
+
+router.put("/:id", verifyAccessToken, orderController.deleteByUser);
 
 module.exports = router;

@@ -24,7 +24,6 @@ const orderSchema = new Schema(
         message: (props) => `${props.value} is not a valid phone number!`,
       },
     },
-    shippingAddress: { type: String, required: true },
     details: [{ type: Number, ref: "OrderDetail" }],
     date: { type: Date, required: true },
     status: { type: String, maxLength: 255, required: true },

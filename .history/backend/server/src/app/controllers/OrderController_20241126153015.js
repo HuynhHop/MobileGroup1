@@ -90,115 +90,93 @@ class OrderController {
   }
 
   // [GET] /order/getOrderByUser
-  // [GET] /order/getOrderByUser
-async getOrdersByUser(req, res) {
-  try {
-    const { _id } = req.user; // Extract user ID from the access token (ensure authentication middleware is used)
+  async getOrdersByUser(req, res) {
+    try {
+      const { _id } = req.user; // Extract user ID from the access token (ensure authentication middleware is used)
 
-    const queries = { ...req.query };
-    const excludeFields = ["limit", "sort", "page", "fields"];
-    excludeFields.forEach((el) => delete queries[el]);
+      const queries = { ...req.query };
+      const excludeFields = ["limit", "sort", "page", "fields"];
+      excludeFields.forEach((el) => delete queries[el]);
 
-    // Format query operators for Mongoose syntax
-    let queryString = JSON.stringify(queries);
-    queryString = queryString.replace(
-      /\b(gte|gt|lt|lte)\b/g,
-      (matchedEl) => `$${matchedEl}`
-    );
-    const formattedQueries = JSON.parse(queryString);
+      // Format query operators for Mongoose syntax
+      let queryString = JSON.stringify(queries);
+      queryString = queryString.replace(
+        /\b(gte|gt|lt|lte)\b/g,
+        (matchedEl) => `$${matchedEl}`
+      );
+      const formattedQueries = JSON.parse(queryString);
 
-    // Filtering by status with case-insensitive regex
-    if (queries?.status) {
-      formattedQueries.status = { $regex: queries.status, $options: "i" };
-    }
+      // Filtering by status with case-insensitive regex
+      if (queries?.status) {
+        formattedQueries.status = { $regex: queries.status, $options: "i" };
+      }
 
-    // Add filter for user ID
-    formattedQueries.user = _id;
+      // Add filter for user ID
+      formattedQueries.user = _id;
 
-    let queryCommand = Order.find(formattedQueries).populate({
-      path: "details",
-      model: "OrderDetail",
-      populate: {
-        path: "productId", // Tham chiếu đến bảng Product
-        model: "Product",
-      },
-    });
+      let queryCommand = Order.find(formattedQueries).populate({
+        path: "details",
+        model: "OrderDetail",
+        select: "productId productName productImage productPrice quantity",
+      });
 
-    // Sorting
-    if (req.query.sort) {
-      const sortBy = req.query.sort.split(",").join(" ");
-      queryCommand = queryCommand.sort(sortBy);
-    }
+      // Sorting
+      if (req.query.sort) {
+        const sortBy = req.query.sort.split(",").join(" ");
+        queryCommand = queryCommand.sort(sortBy);
+      }
 
-    // Field Limiting
-    if (req.query.fields) {
-      const fields = req.query.fields.split(",").join(" ");
-      queryCommand = queryCommand.select(fields);
-    }
+      // Field Limiting
+      if (req.query.fields) {
+        const fields = req.query.fields.split(",").join(" ");
+        queryCommand = queryCommand.select(fields);
+      }
 
-    // Pagination
-    const page = +req.query.page || 1;
-    const limit = +req.query.limit || 10;
-    const skip = (page - 1) * limit;
-    queryCommand = queryCommand.skip(skip).limit(limit);
+      // Pagination
+      const page = +req.query.page || 1;
+      const limit = +req.query.limit || 10;
+      const skip = (page - 1) * limit;
+      queryCommand = queryCommand.skip(skip).limit(limit);
 
-    // Execute query
-    const orders = await queryCommand.exec();
+      // Execute query
+      const orders = await queryCommand.exec();
 
-    // Count total orders for pagination
-    const counts = await Order.find(formattedQueries).countDocuments();
+      // Count total orders for pagination
+      const counts = await Order.find(formattedQueries).countDocuments();
 
-    // Map through each order to add imageUrl to each order detail and productId
-    const formattedOrders = orders.map((order) => {
-      const formattedDetails = order.details.map((detail) => {
-        // Add imageUrl for productImage in OrderDetail
-        const detailImageUrl = detail.productImage
-          ? detail.productImage.startsWith("http")
-            ? detail.productImage
-            : `${req.protocol}://${req.get("host")}/public/images/products/${
-                detail.productImage
-              }`
-          : `${req.protocol}://${req.get(
-              "host"
-            )}/public/images/products/defaultImage.jpg`;
-
-        // Add imageUrl for productId (Product)
-        const productImageUrl = detail.productId.image
-          ? detail.productId.image.startsWith("http")
-            ? detail.productId.image
-            : `${req.protocol}://${req.get("host")}/public/images/products/${
-                detail.productId.image
-              }`
-          : `${req.protocol}://${req.get(
-              "host"
-            )}/public/images/products/defaultImage.jpg`;
-
+      // Map through each order to add imageUrl to each order detail
+      const formattedOrders = orders.map((order) => {
+        const formattedDetails = order.details.map((detail) => {
+          const imageUrl = detail.productImage
+            ? detail.productImage.startsWith("http")
+              ? detail.productImage
+              : `${req.protocol}://${req.get("host")}/public/images/products/${
+                  detail.productImage
+                }`
+            : `${req.protocol}://${req.get(
+                "host"
+              )}/public/images/products/defaultImage.jpg`;
+          return {
+            ...detail.toObject(),
+            imageUrl,
+          };
+        });
         return {
-          ...detail.toObject(),
-          imageUrl: detailImageUrl,
-          productId: {
-            ...detail.productId.toObject(),
-            imageUrl: productImageUrl, // Add imageUrl to productId
-          },
+          ...order.toObject(),
+          details: formattedDetails,
         };
       });
-      return {
-        ...order.toObject(),
-        details: formattedDetails,
-      };
-    });
 
-    res.status(200).json({
-      success: true,
-      counts,
-      orders:
-        formattedOrders.length > 0 ? formattedOrders : "No orders found",
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+      res.status(200).json({
+        success: true,
+        counts,
+        orders:
+          formattedOrders.length > 0 ? formattedOrders : "No orders found",
+      });
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message });
+    }
   }
-}
-
 
   // [GET] /order/
   async getOrders(req, res) {
@@ -349,19 +327,13 @@ async getOrdersByUser(req, res) {
   async checkout(req, res) {
     try {
       const user = req.user; // Lấy thông tin user từ accessToken
-
-      const { payment, shippingAddress, recipientName, recipientPhone } =
-        req.body;
+      const payment = req.body.payment;
       if (!payment) {
         return res
           .status(400)
           .json({ success: false, message: "Payment method not provided" });
       }
-      if (!recipientName || !recipientPhone) {
-        return res
-          .status(400)
-          .json({ success: false, message: "Missing Inputs" });
-      }
+
       let cart = await Cart.findOne({ user: user._id }).populate({
         path: "items",
         select: "selectedForCheckout quantity",
@@ -419,30 +391,27 @@ async getOrdersByUser(req, res) {
         0
       );
       // Kiểm tra rank của user để áp dụng giảm giá
-      // const userInfo = await User.findById(user._id);
-      // const member = await Member.findById(userInfo.member); // Lấy thông tin member của user
-      // if (member) {
-      //   if (member.rank === "Silver") {
-      //     // totalPrice *= 0.98; // Giảm 2%
-      //   } else if (member.rank === "Gold") {
-      //     totalPrice *= 0.95; // Giảm 5%
-      //   } else if (member.rank === "Diamond") {
-      //     totalPrice *= 0.9; // Giảm 10%
-      //   }
-      // }
-      totalPrice = await applyDiscountByRank(user._id, totalPrice);
+      const userInfo = await User.findById(user._id);
+      const member = await Member.findById(userInfo.member); // Lấy thông tin member của user
+      if (member) {
+        totalPrice *= 1 - member.percentDiscount / 100;
+        // if (member.rank === "Silver") {
+        //   // totalPrice *= 0.98; // Giảm 2%
+        // } else if (member.rank === "Gold") {
+        //   totalPrice *= 0.95; // Giảm 5%
+        // } else if (member.rank === "Diamond") {
+        //   totalPrice *= 0.9; // Giảm 10%
+        // }
+      }
 
       // Tạo đơn hàng mới
       const newOrder = await Order.create({
         details: orderDetailsIds,
-        recipientName,
-        recipientPhone,
         date: new Date(),
         status: "Pending",
         totalPrice: totalPrice.toFixed(2), // Làm tròn 2 chữ số thập phân
         payment: payment, // Payment information từ client
         user: user._id,
-        shippingAddress,
       });
 
       // Nếu cần, bạn có thể xóa các item đã checkout khỏi giỏ hàng
@@ -695,32 +664,4 @@ async getOrdersByUser(req, res) {
     }
   }
 }
-
-// Function để tính giảm giá dựa trên rank của thành viên
-async function applyDiscountByRank(userId, totalPrice) {
-  try {
-    // Lấy thông tin user và member
-    const user = await User.findById(userId);
-    const member = await Member.findById(user.member);
-
-    if (member) {
-      switch (member.rank) {
-        case "Silver":
-          return totalPrice * 0.98; // Giảm 2%
-        case "Gold":
-          return totalPrice * 0.95; // Giảm 5%
-        case "Diamond":
-          return totalPrice * 0.9; // Giảm 10%
-        default:
-          return totalPrice; // Không giảm giá nếu không có rank
-      }
-    }
-
-    return totalPrice; // Trả về tổng giá trị gốc nếu không có thông tin member
-  } catch (error) {
-    console.error("Error applying discount:", error.message);
-    return totalPrice; // Trả về tổng giá trị gốc nếu xảy ra lỗi
-  }
-}
-
 module.exports = new OrderController();

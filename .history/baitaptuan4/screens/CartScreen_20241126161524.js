@@ -23,37 +23,6 @@ const CartScreen = ({ navigation }) => {
   const [checkedItems, setCheckedItems] = useState({});
   const [finalPrice, setFinalPrice] = useState(0);
   const [rank, setRank] = useState("");
-  console.log("3,3")
-
-  const rankDiscount = {
-    Silver: 0.98,
-    Gold: 0.95,
-    Diamond: 0.9,
-  };
-
-  const fetchRank = async () => {
-    const accessToken = await AsyncStorage.getItem("@accessToken");
-    try {
-      const response = await fetch(`${API_URL}/user/member`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-      });
-      const data = await response.json();
-
-      if (response.ok) {
-        setRank(data.member?.rank); // Adjust based on your API response
-      } else {
-        console.log("Failed to fetch rank:", data.message);
-      }
-    } catch (error) {
-      console.log("Error fetching rank:", error.message);
-    }
-  };
-  const [finalPrice, setFinalPrice] = useState(0);
-  const [rank, setRank] = useState("");
   console.log("3,3");
 
   const rankDiscount = {
