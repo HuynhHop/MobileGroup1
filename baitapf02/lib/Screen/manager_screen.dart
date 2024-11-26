@@ -39,7 +39,7 @@ class ManagerScreen extends StatelessWidget {
                 _buildGridItem(context, Icons.person_outline, 'Author', null),
                 _buildGridItem(
                     context, Icons.library_books, 'Publisher', '/publisher'),
-                _buildGridItem(context, Icons.shopping_cart, 'Order', null),
+                _buildGridItem(context, Icons.shopping_cart, 'Order', '/order_manager'),
                 _buildGridItem(context, Icons.category, 'Category',
                     '/category'), // Điều hướng tới trang Category
               ],
