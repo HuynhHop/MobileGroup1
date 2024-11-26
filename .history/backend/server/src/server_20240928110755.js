@@ -11,7 +11,6 @@ const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
 require("dotenv").config();
-require("./cronJobs/orderCleanup");
 
 const app = express();
 const port = process.env.PORT || 3000;

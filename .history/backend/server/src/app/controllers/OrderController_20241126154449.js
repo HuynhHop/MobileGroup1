@@ -413,7 +413,7 @@ class OrderController {
       // Tạo đơn hàng mới
       const newOrder = await Order.create({
         details: orderDetailsIds,
-        recipientName,
+        recipientName: recipientName,
         recipientPhone,
         date: new Date(),
         status: "Pending",

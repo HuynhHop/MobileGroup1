@@ -413,14 +413,11 @@ class OrderController {
       // Tạo đơn hàng mới
       const newOrder = await Order.create({
         details: orderDetailsIds,
-        recipientName,
-        recipientPhone,
         date: new Date(),
         status: "Pending",
         totalPrice: totalPrice.toFixed(2), // Làm tròn 2 chữ số thập phân
         payment: payment, // Payment information từ client
         user: user._id,
-        shippingAddress,
       });
 
       // Nếu cần, bạn có thể xóa các item đã checkout khỏi giỏ hàng
