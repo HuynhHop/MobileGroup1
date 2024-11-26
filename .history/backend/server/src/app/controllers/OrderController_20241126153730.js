@@ -327,19 +327,13 @@ class OrderController {
   async checkout(req, res) {
     try {
       const user = req.user; // Lấy thông tin user từ accessToken
-
-      const { payment, shippingAddress, recipientName, recipientPhone } =
-        req.body;
+      const payment = req.body.payment;
       if (!payment) {
         return res
           .status(400)
           .json({ success: false, message: "Payment method not provided" });
       }
-      if (!recipientName || !recipientPhone) {
-        return res
-          .status(400)
-          .json({ success: false, message: "Missing Inputs" });
-      }
+
       let cart = await Cart.findOne({ user: user._id }).populate({
         path: "items",
         select: "selectedForCheckout quantity",
@@ -413,14 +407,11 @@ class OrderController {
       // Tạo đơn hàng mới
       const newOrder = await Order.create({
         details: orderDetailsIds,
-        recipientName,
-        recipientPhone,
         date: new Date(),
         status: "Pending",
         totalPrice: totalPrice.toFixed(2), // Làm tròn 2 chữ số thập phân
         payment: payment, // Payment information từ client
         user: user._id,
-        shippingAddress,
       });
 
       // Nếu cần, bạn có thể xóa các item đã checkout khỏi giỏ hàng
