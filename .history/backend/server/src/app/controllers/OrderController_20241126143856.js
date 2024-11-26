@@ -500,34 +500,32 @@ class OrderController {
   // [PUT] /order/updateIsDelivered/:id
   async updateIsDelivered(req, res) {
     try {
-      const orderId = req.params.id; // Lấy order ID từ params
-      const { isDelivered } = req.body; // Trạng thái isDelivered từ body
+      const { id } = req.params; // Lấy ID của đơn hàng từ URL
+      const { isDelivered } = req.body; // Lấy trạng thái isDelivered từ body
 
-      // Tìm đơn hàng của user
-      const order = await Order.findOne({ _id: orderId });
+      // Tìm và cập nhật trạng thái isDelivered của đơn hàng
+      const order = await Order.findByIdAndUpdate(
+        id,
+        { isDelivered }, // Cập nhật trạng thái isDelivered
+        { new: true } // Trả về tài liệu đã được cập nhật
+      );
 
       if (!order) {
-        return res
-          .status(404)
-          .json({ success: false, message: "Order not found" });
+        return res.status(404).json({
+          success: false,
+          message: "Order not found",
+        });
       }
-
-      // Cập nhật thuộc tính isDelivered
-      order.isDelivered = isDelivered ? isDelivered : false;
-
-      // Lưu lại thay đổi
-      await order.save();
 
       res.status(200).json({
         success: true,
-        message: `Order delivery status updated successfully to ${isDelivered}`,
+        message: "Order delivery status updated successfully",
         order,
       });
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: "Server error",
-        error: error.message,
+        message: error.message,
       });
     }
   }
@@ -628,7 +626,7 @@ class OrderController {
     }
   }
 
-  // [PUT] /order/:id
+  // [DELETE] /order/:id
   async deleteByUser(req, res) {
     try {
       const { id } = req.params;
@@ -648,8 +646,8 @@ class OrderController {
         });
       }
 
-      order.status = "Cancelled";
-      await order.save();
+      // Xóa đơn hàng
+      await Order.findByIdAndDelete(order._id);
 
       res.status(200).json({
         success: true,

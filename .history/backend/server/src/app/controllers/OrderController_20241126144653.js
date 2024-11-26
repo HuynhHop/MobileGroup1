@@ -628,7 +628,7 @@ class OrderController {
     }
   }
 
-  // [PUT] /order/:id
+  // [DELETE] /order/:id
   async deleteByUser(req, res) {
     try {
       const { id } = req.params;

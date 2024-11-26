@@ -500,11 +500,12 @@ class OrderController {
   // [PUT] /order/updateIsDelivered/:id
   async updateIsDelivered(req, res) {
     try {
+      const userId = req.user._id; // Lấy user ID từ xác thực
       const orderId = req.params.id; // Lấy order ID từ params
       const { isDelivered } = req.body; // Trạng thái isDelivered từ body
 
       // Tìm đơn hàng của user
-      const order = await Order.findOne({ _id: orderId });
+      const order = await Order.findOne({ _id: orderId, user: userId });
 
       if (!order) {
         return res
@@ -513,7 +514,8 @@ class OrderController {
       }
 
       // Cập nhật thuộc tính isDelivered
-      order.isDelivered = isDelivered ? isDelivered : false;
+      order.isDelivered =
+        typeof isDelivered === "boolean" ? isDelivered : false;
 
       // Lưu lại thay đổi
       await order.save();
@@ -628,7 +630,7 @@ class OrderController {
     }
   }
 
-  // [PUT] /order/:id
+  // [DELETE] /order/:id
   async deleteByUser(req, res) {
     try {
       const { id } = req.params;
@@ -648,8 +650,8 @@ class OrderController {
         });
       }
 
-      order.status = "Cancelled";
-      await order.save();
+      // Xóa đơn hàng
+      await Order.findByIdAndDelete(order._id);
 
       res.status(200).json({
         success: true,
