@@ -39,6 +39,6 @@ router.put(
   orderController.updateIsDelivered
 );
 
-router.put("/:id", verifyAccessToken, orderController.deleteByUser);
+router.delete("/:id", verifyAccessToken, orderController.deleteByUser);
 
 module.exports = router;

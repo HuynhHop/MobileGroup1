@@ -628,7 +628,7 @@ class OrderController {
     }
   }
 
-  // [PUT] /order/:id
+  // [DELETE] /order/:id
   async deleteByUser(req, res) {
     try {
       const { id } = req.params;
@@ -648,8 +648,8 @@ class OrderController {
         });
       }
 
-      order.status = "Cancelled";
-      await order.save();
+      // Xóa đơn hàng
+      await Order.findByIdAndDelete(order._id);
 
       res.status(200).json({
         success: true,
