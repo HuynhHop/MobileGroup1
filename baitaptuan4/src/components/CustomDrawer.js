@@ -21,7 +21,7 @@ const CustomDrawer = (props) => {
   const { user, setIsAuthenticated, setUser } = useAuth();
   const navigation = useNavigation();
   const [rank, setRank] = useState(null);
-  console.log("11")
+  console.log("11,")
 
   // Fetch rank from the API
   const fetchRank = async () => {

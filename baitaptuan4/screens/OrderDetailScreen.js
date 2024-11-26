@@ -9,18 +9,18 @@ import {
   Alert,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import Icon from "react-native-vector-icons/MaterialIcons";
 import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 
 const OrderDetailScreen = ({ route, navigation }) => {
-  const { orderId } = route.params; // Nhận orderId từ navigation params
+  const { orderId, totalPrice } = route.params; // Access totalPrice from route.params
+  // const { orderId } = route.params;
   const [orderDetails, setOrderDetails] = useState([]);
-  const [totalPrice, setTotalPrice] = useState(0);
+  // const [totalPrice, setTotalPrice] = useState(0);
   const [totalQuantity, setTotalQuantity] = useState(0);
   const [checkedItems, setCheckedItems] = useState({});
   const API_URL = process.env.API_URL;
 
-  // Hàm để fetch chi tiết đơn hàng
+  // Fetch order details and calculate totals
   const fetchOrderDetails = async () => {
     try {
       const accessToken = await AsyncStorage.getItem("@accessToken");
@@ -37,9 +37,9 @@ const OrderDetailScreen = ({ route, navigation }) => {
       if (data.success) {
         setOrderDetails(data.orderDetails);
 
-        // Tính toán tổng số lượng và tổng giá ngay sau khi fetch dữ liệu
+        // Calculate total price after discounts
         const newTotalPrice = data.orderDetails.reduce(
-          (total, item) => total + item.productPrice * item.quantity,
+          (total, item) => total + item.productPrice * item.quantity * (item.discount ? (1 - item.discount / 100) : 1),
           0
         );
         const newTotalQuantity = data.orderDetails.reduce(
@@ -47,13 +47,13 @@ const OrderDetailScreen = ({ route, navigation }) => {
           0
         );
 
-        setTotalPrice(newTotalPrice);
+        // setTotalPrice(newTotalPrice);
         setTotalQuantity(newTotalQuantity);
 
-        // Thiết lập trạng thái checkbox mặc định
+        // Set default checked status for items
         setCheckedItems(() =>
           data.orderDetails.reduce((acc, item) => {
-            acc[item._id] = false; // Mặc định không được chọn
+            acc[item._id] = false;
             return acc;
           }, {})
         );
@@ -65,72 +65,20 @@ const OrderDetailScreen = ({ route, navigation }) => {
     }
   };
 
-  // Hàm gọi khi có thay đổi ở checkbox
+  // Toggle the checkbox for selected items
   const toggleItemChecked = (itemId) => {
     setCheckedItems((prev) => {
       const newCheckedItems = {
         ...prev,
         [itemId]: !prev[itemId],
       };
-      // Tính toán lại tổng khi checkbox thay đổi
-      // calculateTotals(newCheckedItems);
       return newCheckedItems;
     });
   };
 
-  // // Hàm tính toán tổng khi checkbox thay đổi
-  // const calculateTotals = (newCheckedItems) => {
-  //   const selectedItems = orderDetails.filter(
-  //     (item) => newCheckedItems[item._id]
-  //   );
-  //   const newTotalPrice = selectedItems.reduce(
-  //     (total, item) => total + item.productPrice * item.quantity,
-  //     0
-  //   );
-  //   const newTotalQuantity = selectedItems.reduce(
-  //     (total, item) => total + item.quantity,
-  //     0
-  //   );
-  //   setTotalPrice(newTotalPrice);
-  //   setTotalQuantity(newTotalQuantity);
-  // };
-
-  // Hook useEffect để gọi fetchOrderDetails khi màn hình được load
   useEffect(() => {
     fetchOrderDetails();
   }, []);
-
-  // Hàm xóa sản phẩm
-  const handleDeleteItem = (itemId) => {
-    Alert.alert("Delete Item", "Are you sure you want to delete this item?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        onPress: async () => {
-          const accessToken = await AsyncStorage.getItem("@accessToken");
-          try {
-            const response = await fetch(`${API_URL}/cart/items/${itemId}`, {
-              method: "DELETE",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${accessToken}`,
-              },
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-              fetchOrderDetails(); // Làm mới chi tiết đơn hàng sau khi xóa
-            } else {
-              console.error("Error deleting item:", data.message);
-            }
-          } catch (error) {
-            console.error("Error deleting item:", error);
-          }
-        },
-      },
-    ]);
-  };
 
   return (
     <ScrollView style={styles.container}>
@@ -170,6 +118,11 @@ const OrderDetailScreen = ({ route, navigation }) => {
                 <FontAwesome5 name="coins" size={20} color="#CDAD00" />
               </Text>
               <Text>Quantity: {item.quantity}</Text>
+              {item.discount && (
+                <Text style={styles.discountText}>
+                  Discount: {item.discount}% off
+                </Text>
+              )}
             </View>
             <TouchableOpacity
               style={styles.detailButton}
@@ -179,20 +132,16 @@ const OrderDetailScreen = ({ route, navigation }) => {
             >
               <Text style={styles.detailButtonText}>Detail</Text>
             </TouchableOpacity>
-            {/* <TouchableOpacity onPress={() => handleDeleteItem(item._id)}>
-              <Icon name="delete" size={24} color="#FF0000" />
-            </TouchableOpacity> */}
           </View>
         ))
       ) : (
         <Text>No order details found.</Text>
       )}
 
-      <View style={styles.orderSummary}>
-        <Text>Total Items: {totalQuantity}</Text>
-        <Text>
-          Total Price: {totalPrice.toFixed(2)}{"  "}
-          <FontAwesome5 name="coins" size={20} color="#CDAD00" />
+      <View style={styles.totalSummary}>
+        <Text style={styles.totalText}>Total Quantity: {totalQuantity}</Text>
+        <Text style={styles.totalText}>Total Price: {totalPrice.toFixed(2)  }
+        <FontAwesome5 name="coins" size={20} color="#CDAD00" />
         </Text>
       </View>
     </ScrollView>

@@ -19,7 +19,7 @@ const BookDetail = ({ route, navigation }) => {
   const [accessToken, setAccessToken] = useState("");
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
-  console.log("6,6")
+  console.log("6")
 
   useEffect(() => {
     const getToken = async () => {

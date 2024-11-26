@@ -350,13 +350,8 @@ async getOrdersByUser(req, res) {
     try {
       const user = req.user; // Lấy thông tin user từ accessToken
 
-      const { payment, shippingAddress, recipientName, recipientPhone } =
+      const {shippingAddress, recipientName, recipientPhone } =
         req.body;
-      if (!payment) {
-        return res
-          .status(400)
-          .json({ success: false, message: "Payment method not provided" });
-      }
       if (!recipientName || !recipientPhone) {
         return res
           .status(400)
@@ -418,18 +413,6 @@ async getOrdersByUser(req, res) {
         (acc, item) => acc + item.product.price * item.quantity,
         0
       );
-      // Kiểm tra rank của user để áp dụng giảm giá
-      // const userInfo = await User.findById(user._id);
-      // const member = await Member.findById(userInfo.member); // Lấy thông tin member của user
-      // if (member) {
-      //   if (member.rank === "Silver") {
-      //     // totalPrice *= 0.98; // Giảm 2%
-      //   } else if (member.rank === "Gold") {
-      //     totalPrice *= 0.95; // Giảm 5%
-      //   } else if (member.rank === "Diamond") {
-      //     totalPrice *= 0.9; // Giảm 10%
-      //   }
-      // }
       totalPrice = await applyDiscountByRank(user._id, totalPrice);
 
       // Tạo đơn hàng mới
@@ -440,7 +423,7 @@ async getOrdersByUser(req, res) {
         date: new Date(),
         status: "Pending",
         totalPrice: totalPrice.toFixed(2), // Làm tròn 2 chữ số thập phân
-        payment: payment, // Payment information từ client
+        // payment: payment, // Payment information từ client
         user: user._id,
         shippingAddress,
       });

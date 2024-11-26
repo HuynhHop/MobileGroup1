@@ -15,8 +15,7 @@ const OrderScreen = ({ navigation }) => {
   const [orders, setOrders] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState('Pending');
   const API_URL = process.env.API_URL;
-  console.log("4,4")
-
+  
   const fetchOrders = async () => {
     const accessToken = await AsyncStorage.getItem("@accessToken");
     try {
@@ -68,7 +67,6 @@ const OrderScreen = ({ navigation }) => {
       }
   
       if (data.success) {
-        // Remove the cancelled order from the list
         setOrders((prevOrders) => prevOrders.filter(order => order._id !== orderId));
         alert("Order deleted successfully.");
       } else {
@@ -85,13 +83,47 @@ const OrderScreen = ({ navigation }) => {
     // Add restore order logic here
   };
 
+  const handleConfirmDelivery = async (orderId) => {
+    const accessToken = await AsyncStorage.getItem("@accessToken");
+    try {
+      const response = await fetch(`${API_URL}/order/updateIsDelivered/${orderId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ isDelivered: true }),
+      });
+  
+      const data = await response.json();
+  
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to update order status");
+      }
+  
+      if (data.success) {
+        setOrders((prevOrders) =>
+          prevOrders.map((order) =>
+            order._id === orderId ? { ...order, isDelivered: true } : order
+          )
+        );
+        alert("Order status updated to delivered.");
+      } else {
+        alert(data.message || "Failed to update order status");
+      }
+    } catch (error) {
+      console.error("Error updating order status:", error);
+      alert("Error updating order status.");
+    }
+  };
+
   const renderOrdersByStatus = (status) => {
     const filteredOrders = orders.filter(order => order.status === status);
     return (
-      <View className="mb-4">
-        <Text className="font-semibold text-lg text-gray-800">{status}</Text>
+      <View style={styles.statusSection}>
+        <Text style={styles.statusTitle}>{status}</Text>
         {filteredOrders.length === 0 ? (
-          <Text className="text-gray-400">No orders in this status.</Text>
+          <Text style={styles.noOrdersText}>No orders in this status.</Text>
         ) : (
           filteredOrders.map((order) => (
             <View key={order._id} style={styles.orderItem}>
@@ -100,7 +132,6 @@ const OrderScreen = ({ navigation }) => {
               <Text>{order.details.length} items</Text>
               <Text>Total Price: ${order.totalPrice.toFixed(2)}</Text>
 
-              {/* Render product details */}
               {order.details.map((detail) => (
                 <View key={detail._id} style={styles.productDetail}>
                   <Text style={styles.productName}>Product Name: {detail.productName}</Text>
@@ -113,7 +144,7 @@ const OrderScreen = ({ navigation }) => {
                 {/* Detail Button */}
                 <TouchableOpacity
                   style={styles.detailButton}
-                  onPress={() => navigation.navigate('OrderDetail', { orderId: order._id })}
+                  onPress={() => navigation.navigate('OrderDetail', { orderId: order._id, totalPrice: order.totalPrice })}
                 >
                   <Text style={styles.buttonText}>Detail</Text>
                 </TouchableOpacity>
@@ -136,6 +167,15 @@ const OrderScreen = ({ navigation }) => {
                     <Text style={styles.buttonText}>Restore</Text>
                   </TouchableOpacity>
                 )}
+
+              {status === 'Transported' && !order.isDelivered && (
+                <TouchableOpacity
+                  style={styles.confirmButton}
+                  onPress={() => handleConfirmDelivery(order._id)}
+                >
+                  <Text style={styles.buttonText}>Confirm</Text>
+                </TouchableOpacity>
+              )}
               </View>
             </View>
           ))
@@ -145,19 +185,15 @@ const OrderScreen = ({ navigation }) => {
   };
 
   return (
-    <View className="p-4 bg-gray-100 h-full">
+    <View style={styles.container}>
       <ScrollView>
         {/* Render order status buttons */}
-        <View className="flex-row justify-around mb-4">
+        <View style={styles.statusButtonContainer}>
           {['Pending', 'Shipping', 'Transported', 'Cancelled'].map((status) => (
             <TouchableOpacity
               key={status}
               onPress={() => setSelectedStatus(status)}
-              style={[
-                styles.statusButton,
-                selectedStatus === status && styles.selectedStatusButton,
-                selectedStatus === status && styles.selectedStatusScale, // Add scaling effect
-              ]}
+              style={[styles.statusButton, selectedStatus === status && styles.selectedStatusButton]}
             >
               <Text style={[styles.statusButtonText, selectedStatus === status && styles.selectedText]}>
                 {status}
@@ -174,13 +210,51 @@ const OrderScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  container: {
+    padding: 16,
+    backgroundColor: "#f5f5f5",
+    height: "100%",
+  },
+  statusButtonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginBottom: 20,
+  },
+  statusButton: {
+    backgroundColor: "#e2e8f0",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginHorizontal: 5,
+  },
+  selectedStatusButton: {
+    backgroundColor: "#38a169", 
+  },
+  statusButtonText: {
+    color: "#333",
+    fontWeight: "600",
+  },
+  selectedText: {
+    color: "#fff", 
+  },
+  statusSection: {
+    marginBottom: 20,
+  },
+  statusTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  noOrdersText: {
+    color: "#aaa",
+  },
   orderItem: {
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 10,
     padding: 16,
     marginBottom: 16,
-    backgroundColor: "#ffffff",
+    backgroundColor: "#fff",
     shadowColor: "#000",
     shadowOpacity: 0.2,
     shadowRadius: 6,
@@ -218,42 +292,26 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   cancelButton: {
-    backgroundColor: "#FF0000",
+    backgroundColor: "#ff4d4d",
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 5,
   },
   restoreButton: {
-    backgroundColor: "#38a169", // Change to green for restore
+    backgroundColor: "#ff9800",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+  },
+  confirmButton: {
+    backgroundColor: "#4CAF50",
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 5,
   },
   buttonText: {
     color: "#fff",
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-  statusButton: {
-    backgroundColor: "#e2e8f0", // Gray background
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    marginHorizontal: 5, // Add some margin to separate buttons
-    elevation: 2,
-  },
-  selectedStatusButton: {
-    backgroundColor: "#38a169", // Change to a green color for better contrast
-  },
-  selectedStatusScale: {
-    transform: [{ scale: 1.1 }], // Scale up the selected button
-  },
-  statusButtonText: {
-    color: "#333",
     fontWeight: "600",
-  },
-  selectedText: {
-    color: "#fff", // White text when selected
   },
 });
 
