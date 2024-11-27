@@ -35,7 +35,7 @@ router.put(
 
 router.put(
   "/updateIsDelivered/:id",
-  [verifyAccessToken],
+  [verifyAccessToken, isAdmin],
   orderController.updateIsDelivered
 );
 
