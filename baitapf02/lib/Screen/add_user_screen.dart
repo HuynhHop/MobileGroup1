@@ -41,12 +41,13 @@ class _AddUserScreenState extends State<AddUserScreen> {
         final data = jsonDecode(response.body);
         if (data['success']) {
           showSnackBar('User added successfully');
-          Navigator.pop(context); // Quay lại màn hình trước
+          Navigator.pop(context, true); // Quay lại màn hình trước
         } else {
           showSnackBar('Failed to add user');
         }
       } else {
-        showSnackBar('Error: ${response.statusCode}');
+        final data = jsonDecode(response.body);
+        showSnackBar('Error: ${data['message']}');
       }
     } catch (error) {
       showSnackBar('Something went wrong: $error');
