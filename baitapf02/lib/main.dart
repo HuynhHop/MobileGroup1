@@ -53,7 +53,7 @@ import 'package:baitapf02/Screen/edit_user_screen.dart';
 import 'package:baitapf02/Screen/forget_password_screen.dart';
 import 'package:baitapf02/Screen/login_screen.dart';
 import 'package:baitapf02/Screen/manager_order_screen.dart';
-import 'package:baitapf02/Screen/manager_screen.dart';
+// import 'package:baitapf02/Screen/manager_screen.dart';
 import 'package:baitapf02/Screen/register_screen.dart';
 import 'package:baitapf02/Screen/reset_password_screen.dart';
 import 'package:baitapf02/Screen/category_screen.dart';
@@ -80,7 +80,7 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => LoginScreen(),
-        '/manager': (context) => ManagerScreen(),
+        // '/manager': (context) => ManagerScreen(),
         '/register': (context) => RegisterScreen(),
         '/forget-password': (context) => ForgotPasswordScreen(),
         '/reset-password': (context) => ResetPasswordScreen(),

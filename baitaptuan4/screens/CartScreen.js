@@ -30,7 +30,7 @@ const CartScreen = ({ navigation }) => {
   const [recipientName, setRecipientName] = useState("");
   const [recipientPhone, setRecipientPhone] = useState("");
   const [shippingAddress, setShippingAddress] = useState("");
-
+  console.log("cartScreen");
   const rankDiscount = {
     Silver: 0.98,
     Gold: 0.95,
@@ -180,19 +180,19 @@ const CartScreen = ({ navigation }) => {
 
   const handleCheckout = async () => {
     const selectedItems = cartItems.filter((item) => checkedItems[item._id]);
-  
+
     if (selectedItems.length === 0) {
       Alert.alert("Checkout Failed", "No items selected for checkout", [
         { text: "OK" },
       ]);
       return;
     }
-  
+
     // // Giả sử các thông tin này sẽ được nhập từ UI hoặc form
     // const shippingAddress = "123 Main Street"; // Thay bằng giá trị thực tế từ input
     // const recipientName = "John Doe"; // Thay bằng giá trị thực tế từ input
     // const recipientPhone = "1234567890"; // Thay bằng giá trị thực tế từ input
-  
+
     const accessToken = await AsyncStorage.getItem("@accessToken");
     try {
       const response = await fetch(`${API_URL}/order/checkout`, {
@@ -207,9 +207,9 @@ const CartScreen = ({ navigation }) => {
           recipientPhone,
         }),
       });
-  
+
       const data = await response.json();
-  
+
       if (data.success) {
         Alert.alert("Checkout Successful", "Your order has been placed!", [
           {
@@ -461,6 +461,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
-
 
 export default CartScreen;
