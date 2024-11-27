@@ -7,14 +7,14 @@ const Product = require("../models/Product");
 const validateReferencesProduct = async (req, res, next) => {
   try {
     const { author, publisher, categories } = req.body;
-    if (author) {
-      const authorExists = await Author.findById(author);
-      if (!authorExists) {
-        return res
-          .status(400)
-          .json({ success: false, message: "Author not found" });
-      }
-    }
+    // if (author) {
+    //   const authorExists = await Author.findById(author);
+    //   if (!authorExists) {
+    //     return res
+    //       .status(400)
+    //       .json({ success: false, message: "Author not found" });
+    //   }
+    // }
 
     if (publisher) {
       const publisherExists = await Publisher.findById(publisher);

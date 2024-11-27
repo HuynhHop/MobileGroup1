@@ -35,8 +35,8 @@ class ManagerScreen extends StatelessWidget {
               padding: const EdgeInsets.all(10),
               children: [
                 _buildGridItem(context, Icons.person, 'User', '/user_manager'),
-                _buildGridItem(context, Icons.book, 'Product', null),
-                _buildGridItem(context, Icons.person_outline, 'Author', null),
+                _buildGridItem(context, Icons.book, 'Product', '/product_manager'),
+                //_buildGridItem(context, Icons.person_outline, 'Author', null),
                 _buildGridItem(
                     context, Icons.library_books, 'Publisher', '/publisher'),
                 _buildGridItem(context, Icons.shopping_cart, 'Order', '/order_manager'),

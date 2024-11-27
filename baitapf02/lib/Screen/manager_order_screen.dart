@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:baitapf02/Screen/order_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
@@ -18,7 +19,7 @@ class _ManagerOrderScreen extends State<ManagerOrderScreen> {
   Future<List<Order>> fetchOrders(String status) async {
     final token = await storage.read(key: "accessToken"); // Lấy token từ bộ nhớ
     final response = await http.get(
-      Uri.parse('$apiUrl/order/getAll'),
+      Uri.parse('$apiUrl/order/getAllAdmin'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
@@ -121,13 +122,44 @@ class _ManagerOrderScreen extends State<ManagerOrderScreen> {
                           itemBuilder: (context, index) {
                             final order = orders[index];
                             return Card(
+                              margin: const EdgeInsets.symmetric(vertical: 8.0),
                               child: ListTile(
-                                title: Text("Order ID: ${order.id}"),
-                                subtitle: Text("Total: \$${order.totalPrice}"),
+                                title: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text("ORDER ID: ${order.id}"),
+                                    Text("USER ID: ${order.userid}"),
+                                    Text("Date: ${DateTime.parse(order.date).toLocal().toString().split(' ')[0]}"), // Format the date
+                                    Text("${order.details.length} items"), // Number of items
+                                    Text("Total Price: \$${order.totalPrice.toStringAsFixed(2)}"), // Total price
+
+                                    // Display product details in a smaller, light-colored container
+                                    ...order.details.map((detail) {
+                                      return Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 5.0),
+                                        child: Container(
+                                          padding: EdgeInsets.all(8.0),
+                                          decoration: BoxDecoration(
+                                            color: Colors.grey[200], // Light background color
+                                            borderRadius: BorderRadius.circular(8.0), // Rounded corners
+                                          ),
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text("Product Name: ${detail.productName}"),
+                                              Text("Price: \$${detail.productPrice.toStringAsFixed(2)}"),
+                                              Text("Quantity: ${detail.quantity}"),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ],
+                                ),
                                 trailing: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    if (status != "Delivered" && status != "Cancelled")
+                                    if (status != "Transported" && status != "Delivered" && status != "Cancelled")
                                       IconButton(
                                         icon: Icon(Icons.check),
                                         onPressed: () {
@@ -140,13 +172,12 @@ class _ManagerOrderScreen extends State<ManagerOrderScreen> {
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(
-                                            builder: (context) =>
-                                                OrderDetailScreen(orderId: order.id),
+                                            builder: (context) => OrderDetailScreen(orderId: order.id),
                                           ),
                                         );
                                       },
                                     ),
-                                    if (status != "Cancelled" && status != "Delivered")
+                                    if (status != "Transported" && status != "Cancelled" && status != "Delivered")
                                       IconButton(
                                         icon: Icon(Icons.cancel),
                                         onPressed: () {
@@ -164,6 +195,7 @@ class _ManagerOrderScreen extends State<ManagerOrderScreen> {
             );
           }).toList(),
         ),
+
       ),
     );
   }
@@ -171,38 +203,55 @@ class _ManagerOrderScreen extends State<ManagerOrderScreen> {
 
 class Order {
   final int id;
+  final int userid;
   final double totalPrice;
   final String status;
   final bool isDelivered;
+  final String date;
+  final List<OrderDetail> details;
 
   Order({
     required this.id,
+    required this.userid,
     required this.totalPrice,
     required this.status,
     required this.isDelivered,
+    required this.date,
+    required this.details,
   });
 
   factory Order.fromJson(Map<String, dynamic> json) {
+    var detailsList = json['details'] as List;
+    List<OrderDetail> orderDetails = detailsList.map((i) => OrderDetail.fromJson(i)).toList();
+
     return Order(
       id: json['_id'],
       totalPrice: json['totalPrice'].toDouble(),
+      userid: json['user'],
       status: json['status'],
-      isDelivered: json['isDelivered'] ?? false, // Gán giá trị mặc định nếu không tồn tại
+      isDelivered: json['isDelivered'] ?? false,
+      date: json['date'],
+      details: orderDetails,
     );
   }
 }
 
-class OrderDetailScreen extends StatelessWidget {
-  final int orderId;
+class OrderDetail {
+  final String productName;
+  final double productPrice;
+  final int quantity;
 
-  OrderDetailScreen({required this.orderId});
+  OrderDetail({
+    required this.productName,
+    required this.productPrice,
+    required this.quantity,
+  });
 
-  @override
-  Widget build(BuildContext context) {
-    // TODO: Xây dựng màn hình chi tiết đơn hàng
-    return Scaffold(
-      appBar: AppBar(title: Text("Order Detail")),
-      body: Center(child: Text("Order ID: $orderId")),
+  factory OrderDetail.fromJson(Map<String, dynamic> json) {
+    return OrderDetail(
+      productName: json['productName'],
+      productPrice: json['productPrice'].toDouble(),
+      quantity: json['quantity'],
     );
   }
 }

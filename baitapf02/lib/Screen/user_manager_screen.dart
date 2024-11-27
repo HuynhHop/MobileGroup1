@@ -93,7 +93,11 @@ class _UserManagerScreenState extends State<UserManagerScreen> {
           IconButton(
             icon: Icon(Icons.add),
             onPressed: () {
-              Navigator.pushNamed(context, '/add_user'); // Điều hướng tới AddUserScreen
+              Navigator.pushNamed(context, '/add_user').then((result) {
+                if (result == true) {
+                  fetchUsers(); // Refresh the user
+                }
+              });
             },
           ),
         ],
