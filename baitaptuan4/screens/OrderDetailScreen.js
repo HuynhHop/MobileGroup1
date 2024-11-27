@@ -19,6 +19,7 @@ const OrderDetailScreen = ({ route, navigation }) => {
   const [totalQuantity, setTotalQuantity] = useState(0);
   const [checkedItems, setCheckedItems] = useState({});
   const API_URL = process.env.API_URL;
+  console.log("OrderDetail");
 
   // Fetch order details and calculate totals
   const fetchOrderDetails = async () => {
@@ -39,7 +40,11 @@ const OrderDetailScreen = ({ route, navigation }) => {
 
         // Calculate total price after discounts
         const newTotalPrice = data.orderDetails.reduce(
-          (total, item) => total + item.productPrice * item.quantity * (item.discount ? (1 - item.discount / 100) : 1),
+          (total, item) =>
+            total +
+            item.productPrice *
+              item.quantity *
+              (item.discount ? 1 - item.discount / 100 : 1),
           0
         );
         const newTotalQuantity = data.orderDetails.reduce(
@@ -99,13 +104,13 @@ const OrderDetailScreen = ({ route, navigation }) => {
         orderDetails.map((item) => (
           <View key={item._id} style={styles.orderItem}>
             <TouchableOpacity onPress={() => toggleItemChecked(item._id)}>
-              <View style={styles.checkbox}>
+              {/* <View style={styles.checkbox}>
                 {checkedItems[item._id] ? (
                   <Text style={styles.checked}>✔️</Text>
                 ) : (
                   <Text style={styles.unchecked}>⬜️</Text>
                 )}
-              </View>
+              </View> */}
             </TouchableOpacity>
             <Image
               source={{ uri: item.product.imageUrl }}
@@ -114,7 +119,8 @@ const OrderDetailScreen = ({ route, navigation }) => {
             <View style={styles.productDetails}>
               <Text>{item.productName}</Text>
               <Text>
-                {item.productPrice.toFixed(2)}{"  "}
+                {item.productPrice.toFixed(2)}
+                {"  "}
                 <FontAwesome5 name="coins" size={20} color="#CDAD00" />
               </Text>
               <Text>Quantity: {item.quantity}</Text>
@@ -140,8 +146,9 @@ const OrderDetailScreen = ({ route, navigation }) => {
 
       <View style={styles.totalSummary}>
         <Text style={styles.totalText}>Total Quantity: {totalQuantity}</Text>
-        <Text style={styles.totalText}>Total Price: {totalPrice.toFixed(2)  }
-        <FontAwesome5 name="coins" size={20} color="#CDAD00" />
+        <Text style={styles.totalText}>
+          Total Price: {totalPrice.toFixed(2)}
+          <FontAwesome5 name="coins" size={20} color="#CDAD00" />
         </Text>
       </View>
     </ScrollView>

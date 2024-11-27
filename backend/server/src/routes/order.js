@@ -38,6 +38,17 @@ router.put(
   [verifyAccessToken],
   orderController.updateIsDelivered
 );
+router.put(
+  "/checkAllOrders",
+  [verifyAccessToken],
+  orderController.checkAllOrders
+);
+
+router.put(
+  "/updateIsChecked/:id",
+  [verifyAccessToken],
+  orderController.updateIsChecked
+);
 
 router.put("/:id", verifyAccessToken, orderController.deleteByUser);
 
