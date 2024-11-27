@@ -33,6 +33,7 @@ const orderSchema = new Schema(
     payment: { type: String, enum: Object.values(Payment) },
     user: { type: Number, ref: "User", required: true },
     isDelivered: { type: Boolean, default: false },
+    isChecked: { type: Boolean, default: false },
   },
 
   { timestamps: true }

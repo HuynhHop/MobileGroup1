@@ -41,4 +41,16 @@ router.put(
 
 router.put("/:id", verifyAccessToken, orderController.deleteByUser);
 
+router.put(
+  "/checkAllOrders",
+  [verifyAccessToken],
+  orderController.checkAllOrders
+);
+
+router.put(
+  "/updateIsChecked/:id",
+  [verifyAccessToken],
+  orderController.updateIsChecked
+);
+
 module.exports = router;

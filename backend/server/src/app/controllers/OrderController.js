@@ -9,6 +9,69 @@ const Member = require("../models/Member");
 class OrderController {
   // [GET] /order/:id
 
+  // [PUT] /order/checkAll
+  async checkAllOrders(req, res) {
+    try {
+      // Cập nhật tất cả các đơn hàng, đặt isChecked thành true
+      const result = await Order.updateMany(
+        { isChecked: false }, // Điều kiện: chỉ cập nhật các đơn hàng chưa được checked
+        { $set: { isChecked: true } } // Đặt isChecked thành true
+      );
+
+      if (result.modifiedCount === 0) {
+        return res.status(404).json({
+          success: false,
+          message: "No orders found to check",
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        message: `${result.modifiedCount} orders were successfully checked.`,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: "Failed to check all orders",
+        error: error.message,
+      });
+    }
+  }
+  // [PUT] /order/updateIsChecked/:id
+  async updateIsChecked(req, res) {
+    try {
+      const { id } = req.params; // Lấy order ID từ params
+
+      // Tìm đơn hàng theo ID
+      const order = await Order.findById(id);
+
+      if (!order) {
+        return res.status(404).json({
+          success: false,
+          message: "Order not found",
+        });
+      }
+
+      // Cập nhật trạng thái isChecked
+      order.isChecked = true;
+
+      // Lưu thay đổi vào cơ sở dữ liệu
+      await order.save();
+
+      res.status(200).json({
+        success: true,
+        message: "Order isChecked status updated successfully",
+        order,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: "Failed to update isChecked status",
+        error: error.message,
+      });
+    }
+  }
+  
   async getById(req, res) {
     try {
       // Tìm đơn hàng theo ID và populate cả chi tiết đơn hàng và thông tin sản phẩm

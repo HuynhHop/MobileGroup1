@@ -19,7 +19,7 @@ const PurchaseHistoryScreen = ({ navigation }) => {
   const [totalPrice, setTotalPrice] = useState(0);
   const [totalQuantity, setTotalQuantity] = useState(0);
   const API_URL = process.env.API_URL;
-  console.log("10")
+  console.log("100")
 
   const fetchPurchasedOrders = async () => {
     try {

@@ -54,6 +54,7 @@ const userSchema = new Schema(
     passwordResetToken: { type: String },
     passwordResetExpires: { type: String },
     member: { type: Number, ref: "Member" },
+    isChecked: { type: Boolean, default: false },
   },
 
   { timestamps: true }

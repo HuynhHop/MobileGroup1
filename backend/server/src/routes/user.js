@@ -32,4 +32,7 @@ router.delete("/:id", [verifyAccessToken, isAdmin], userController.delete);
 
 router.patch("/:id/restore", userController.restore);
 
+router.put("/checkAllUsers", userController.checkAllUsers);
+router.put("/updateIsChecked/:id", userController.updateUserIsChecked);
+
 module.exports = router;
