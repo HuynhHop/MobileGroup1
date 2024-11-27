@@ -156,7 +156,6 @@ class ProductController {
         !name ||
         !price ||
         !pageNumber ||
-        !author ||
         !publisher ||
         !categories
       ) {

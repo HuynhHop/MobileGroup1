@@ -677,6 +677,39 @@ async getOrdersByUser(req, res) {
       });
     }
   }
+
+  // [GET] /order/getAllAdmin
+  async getAllAdmin(req, res) {
+    try {
+      // Lấy tất cả đơn hàng, sắp xếp theo updatedAt (mới nhất trước)
+      const orders = await Order.find()
+        .populate({
+          path: "details",
+          model: "OrderDetail",
+        })
+        .sort({ updatedAt: -1 }); // Sắp xếp theo updatedAt, mới nhất trước
+
+      const counts = await Order.find().countDocuments();
+      if (orders.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: "No orders found",
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        counts,
+        orders,
+      });
+
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  }
 }
 
 // Function để tính giảm giá dựa trên rank của thành viên

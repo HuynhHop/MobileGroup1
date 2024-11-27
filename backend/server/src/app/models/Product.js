@@ -29,7 +29,7 @@ const productSchema = new Schema(
     author: {
       type: Number,
       ref: "Author",
-      required: true,
+      required: false,
     },
 
     publisher: {
