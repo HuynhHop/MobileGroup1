@@ -7,6 +7,10 @@ import {
   ScrollView,
   StyleSheet,
   Alert,
+  TextInput,
+  recipientName,
+  recipientPhone,
+  shippingAddress,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useAuth } from "../src/hook/authContext";
@@ -23,7 +27,9 @@ const CartScreen = ({ navigation }) => {
   const [checkedItems, setCheckedItems] = useState({});
   const [finalPrice, setFinalPrice] = useState(0);
   const [rank, setRank] = useState("");
-  console.log("3,3");
+  const [recipientName, setRecipientName] = useState("");
+  const [recipientPhone, setRecipientPhone] = useState("");
+  const [shippingAddress, setShippingAddress] = useState("");
 
   const rankDiscount = {
     Silver: 0.98,
@@ -174,28 +180,38 @@ const CartScreen = ({ navigation }) => {
 
   const handleCheckout = async () => {
     const selectedItems = cartItems.filter((item) => checkedItems[item._id]);
-
+  
     if (selectedItems.length === 0) {
       Alert.alert("Checkout Failed", "No items selected for checkout", [
         { text: "OK" },
       ]);
-      return; // Dừng quá trình checkout nếu không có sản phẩm nào được chọn
+      return;
     }
-
+  
+    // // Giả sử các thông tin này sẽ được nhập từ UI hoặc form
+    // const shippingAddress = "123 Main Street"; // Thay bằng giá trị thực tế từ input
+    // const recipientName = "John Doe"; // Thay bằng giá trị thực tế từ input
+    // const recipientPhone = "1234567890"; // Thay bằng giá trị thực tế từ input
+  
     const accessToken = await AsyncStorage.getItem("@accessToken");
     try {
-      const response = await fetch(`${API_URL}/cart/checkout`, {
+      const response = await fetch(`${API_URL}/order/checkout`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
         },
+        body: JSON.stringify({
+          shippingAddress,
+          recipientName,
+          recipientPhone,
+        }),
       });
-
+  
       const data = await response.json();
-
+  
       if (data.success) {
-        Alert.alert("Checkout Successful", "Ok!", [
+        Alert.alert("Checkout Successful", "Your order has been placed!", [
           {
             text: "OK",
             onPress: () => navigation.navigate("Order"),
@@ -272,6 +288,27 @@ const CartScreen = ({ navigation }) => {
         <Text>Your cart is empty.</Text>
       )}
 
+      <View style={styles.formContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder="Recipient Name"
+          value={recipientName}
+          onChangeText={(text) => setRecipientName(text)}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Recipient Phone"
+          keyboardType="phone-pad"
+          value={recipientPhone}
+          onChangeText={(text) => setRecipientPhone(text)}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Shipping Address"
+          value={shippingAddress}
+          onChangeText={(text) => setShippingAddress(text)}
+        />
+      </View>
       <View style={styles.cartSummary}>
         <Text>Total Items: {totalQuantity}</Text>
         <Text>
@@ -375,6 +412,55 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
   },
+  formContainer: {
+    marginVertical: 20,
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    backgroundColor: "#f9f9f9",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  input: {
+    height: 45,
+    borderColor: "#ddd",
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    marginBottom: 16,
+    backgroundColor: "#fff",
+    fontSize: 16,
+  },
+  inputFocused: {
+    borderColor: "#007BFF",
+    shadowColor: "#007BFF",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  inputLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 6,
+  },
+  formButton: {
+    marginTop: 12,
+    backgroundColor: "#007BFF",
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  formButtonText: {
+    color: "#fff",
+    fontSize: 16,
+  },
 });
+
 
 export default CartScreen;

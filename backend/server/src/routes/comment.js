@@ -5,11 +5,12 @@ const { verifyAccessToken, isAdmin } = require("../app/middlewares/jwt");
 const {
   validateReferencesComment,
 } = require("../app/middlewares/validateReferences");
+const checkProductPurchased = require("../app/middlewares/checkProductPurchased");
 const router = express.Router();
 router.get("/", commentController.getAll);
 router.post(
   "/create",
-  [verifyAccessToken, validateReferencesComment],
+  [verifyAccessToken, validateReferencesComment, checkProductPurchased],
   commentController.comment
 );
 router.put(
