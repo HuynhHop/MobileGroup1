@@ -21,7 +21,7 @@ const CustomDrawer = (props) => {
   const { user, setIsAuthenticated, setUser } = useAuth();
   const navigation = useNavigation();
   const [rank, setRank] = useState(null);
-  console.log("10")
+  console.log("CustomDrawer");
 
   // Fetch rank from the API
   const fetchRank = async () => {
@@ -126,7 +126,10 @@ const CustomDrawer = (props) => {
           </View>
         </TouchableOpacity>
         {user ? (
-          <TouchableOpacity onPress={handleLogout} style={{ paddingVertical: 15 }}>
+          <TouchableOpacity
+            onPress={handleLogout}
+            style={{ paddingVertical: 15 }}
+          >
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <Ionicons name="exit-outline" size={22} />
               <Text style={{ fontSize: 15, marginLeft: 5 }}>Sign Out</Text>

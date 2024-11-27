@@ -19,17 +19,21 @@ const PurchaseHistoryScreen = ({ navigation }) => {
   const [totalPrice, setTotalPrice] = useState(0);
   const [totalQuantity, setTotalQuantity] = useState(0);
   const API_URL = process.env.API_URL;
+  console.log("Purchase");
 
   const fetchPurchasedOrders = async () => {
     try {
       const accessToken = await AsyncStorage.getItem("@accessToken");
-      const response = await fetch(`${API_URL}/order/getOrderByUser?status=Transported`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const response = await fetch(
+        `${API_URL}/order/getOrderByUser?status=Transported`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
 
       const data = await response.json();
 
@@ -59,11 +63,12 @@ const PurchaseHistoryScreen = ({ navigation }) => {
   };
 
   const calculateTotals = () => {
-    const selectedItems = purchasedOrders.filter((order) =>
-      checkedItems[order._id]
+    const selectedItems = purchasedOrders.filter(
+      (order) => checkedItems[order._id]
     );
     const newTotalPrice = selectedItems.reduce(
-      (total, order) => total + order.details[0].productPrice * order.details[0].quantity,
+      (total, order) =>
+        total + order.details[0].productPrice * order.details[0].quantity,
       0
     );
     const newTotalQuantity = selectedItems.reduce(
@@ -112,9 +117,12 @@ const PurchaseHistoryScreen = ({ navigation }) => {
               style={styles.productImage}
             />
             <View style={styles.productDetails}>
-              <Text style={styles.productName}>{order.details[0].productName}</Text>
+              <Text style={styles.productName}>
+                {order.details[0].productName}
+              </Text>
               <Text style={styles.productPrice}>
-                {order.details[0].productPrice.toFixed(2)}{"  "}
+                {order.details[0].productPrice.toFixed(2)}
+                {"  "}
                 <FontAwesome5 name="coins" size={20} color="#CDAD00" />
               </Text>
               <Text>Quantity: {order.details[0].quantity}</Text>
@@ -123,7 +131,9 @@ const PurchaseHistoryScreen = ({ navigation }) => {
             <TouchableOpacity
               style={styles.detailButton}
               onPress={() =>
-                navigation.navigate('BookDetail', {  product: order.details[0]})
+                navigation.navigate("BookDetail", {
+                  product: order.details[0].productId,
+                })
               }
             >
               <Text style={styles.detailButtonText}>Details</Text>
@@ -137,7 +147,8 @@ const PurchaseHistoryScreen = ({ navigation }) => {
       <View style={styles.orderSummary}>
         <Text>Total Items: {totalQuantity}</Text>
         <Text>
-          Total Price: {totalPrice.toFixed(2)}{"  "}
+          Total Price: {totalPrice.toFixed(2)}
+          {"  "}
           <FontAwesome5 name="coins" size={20} color="#CDAD00" />
         </Text>
       </View>

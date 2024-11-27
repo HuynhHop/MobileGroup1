@@ -3,6 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
+import 'package:jwt_decoder/jwt_decoder.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -42,16 +43,28 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (response.statusCode == 200) {
         await storage.write(key: "accessToken", value: data["accessToken"]);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Login successful")),
-        );
-        // Navigator.pushReplacementNamed(context, "/manager");
-        // Truyền dữ liệu userData vào ManagerScreen
-        Navigator.pushReplacementNamed(
-          context,
-          "/manager",
-          arguments: data["userData"], // Truyền toàn bộ userData
-        );
+        await storage.write(key: "userData", value: json.encode(data["userData"]));
+        String accessToken = data["accessToken"];
+        Map<String, dynamic> decodedToken = JwtDecoder.decode(accessToken);
+
+        int userRole = decodedToken["role"];
+
+        if (userRole == 1) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Login successful as Admin")),
+          );
+          // Navigator.pushReplacementNamed(context, "/manager");
+          // Truyền dữ liệu userData vào ManagerScreen
+          Navigator.pushReplacementNamed(
+            context,
+            "/manager",
+            arguments: data["userData"], // Truyền toàn bộ userData
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Login failed")),
+          );
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(data["message"] ?? "Login failed")),

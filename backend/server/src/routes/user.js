@@ -20,6 +20,10 @@ router.post("/login", userController.login);
 
 router.put("/refreshAccessToken", userController.refreshAccessToken);
 router.put("/resetPassword", userController.resetPassword);
+
+router.put("/checkAllUsers", userController.checkAllUsers);
+router.put("/updateIsChecked/:id", userController.updateUserIsChecked);
+
 router.put("/:uid", verifyAccessToken, isAdmin, userController.updateByAdmin);
 router.put("/", verifyAccessToken, userController.update);
 
@@ -31,5 +35,8 @@ router.delete(
 router.delete("/:id", [verifyAccessToken, isAdmin], userController.delete);
 
 router.patch("/:id/restore", userController.restore);
+
+router.put("/checkAllUsers", userController.checkAllUsers);
+router.put("/updateIsChecked/:id", userController.updateUserIsChecked);
 
 module.exports = router;

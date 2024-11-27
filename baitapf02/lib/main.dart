@@ -52,7 +52,10 @@ import 'package:baitapf02/Screen/add_user_screen.dart';
 import 'package:baitapf02/Screen/edit_user_screen.dart';
 import 'package:baitapf02/Screen/forget_password_screen.dart';
 import 'package:baitapf02/Screen/login_screen.dart';
-import 'package:baitapf02/Screen/manager_screen.dart';
+import 'package:baitapf02/Screen/manage_screen.dart';
+import 'package:baitapf02/Screen/manager_order_screen.dart';
+import 'package:baitapf02/Screen/manager_product_screen.dart';
+import 'package:baitapf02/Screen/order_detail_screen.dart';
 import 'package:baitapf02/Screen/register_screen.dart';
 import 'package:baitapf02/Screen/reset_password_screen.dart';
 import 'package:baitapf02/Screen/category_screen.dart';
@@ -101,6 +104,9 @@ class MyApp extends StatelessWidget {
         '/publisher': (context) => PublisherScreen(),
         '/add-publisher': (context) =>
             AddPublisherScreen(), // Thêm route cho màn hình add
+        '/order_manager': (context) => ManagerOrderScreen(),
+        '/order_detail': (context) => ManagerOrderScreen(),
+        '/product_manager': (context) => ManagerProductScreen(),
         '/edit-publisher': (context) {
           final args = ModalRoute.of(context)!.settings.arguments
               as Map<String, dynamic>;
@@ -109,6 +115,7 @@ class MyApp extends StatelessWidget {
             publisherName: args['publisherName'],
             publisherDescription: args['publisherDescription'],
           );
+          
         },
       },
     );

@@ -19,7 +19,7 @@ const BookDetail = ({ route, navigation }) => {
   const [accessToken, setAccessToken] = useState("");
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
-  console.log("6,")
+  console.log(".");
 
   useEffect(() => {
     const getToken = async () => {
@@ -91,7 +91,7 @@ const BookDetail = ({ route, navigation }) => {
           comment: newComment,
         }),
       });
-      console.log(product._id)
+      console.log(product._id);
       const data = await response.json();
       if (data.success) {
         alert("Comment added successfully!");
@@ -102,7 +102,9 @@ const BookDetail = ({ route, navigation }) => {
       }
     } catch (error) {
       console.log("Error while adding comment:", err); // Debug line
-      res.status(500).json({ success: false, message: "An error occurred: " + err.message });
+      res
+        .status(500)
+        .json({ success: false, message: "An error occurred: " + err.message });
     }
   };
 
@@ -128,14 +130,19 @@ const BookDetail = ({ route, navigation }) => {
           </View>
 
           <View className="bg-orange-50 px-6 pt-8 space-y-2 rounded-t-3xl">
-            <Text className="text-black text-2xl font-bold">{product?.name}</Text>
+            <Text className="text-black text-2xl font-bold">
+              {product?.name}
+            </Text>
 
             <View className="flex-row justify-between mb-3">
               <Text className="text-gray-500 font-semibold">
                 {product?.description || "Description of this book here"}
               </Text>
               <Text className="text-gray-500 font-semibold">
-                Sold: <Text className="text-gray-800 font-extrabold">{product?.soldCount}</Text>
+                Sold:{" "}
+                <Text className="text-gray-800 font-extrabold">
+                  {product?.soldCount}
+                </Text>
               </Text>
             </View>
 
@@ -178,13 +185,16 @@ const BookDetail = ({ route, navigation }) => {
 
       <View className="flex-row justify-between p-4 bg-white border-t border-gray-300 absolute bottom-0 w-full h-20">
         <Text className="text-3xl">
-          $ {product.price} <FontAwesome5 name="coins" size={30} color="#787816" />
+          $ {product.price}{" "}
+          <FontAwesome5 name="coins" size={30} color="#787816" />
         </Text>
         <TouchableOpacity
           className="bg-black bg-opacity-80 p-3 rounded-lg"
           onPress={handleAddToCart} // Call the handleAddToCart function on press
         >
-          <Text className="text-2xl text-center text-white font-bold">Add to cart</Text>
+          <Text className="text-2xl text-center text-white font-bold">
+            Add to cart
+          </Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
