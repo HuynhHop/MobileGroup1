@@ -100,14 +100,12 @@ class _ManagerScreenState extends State<ManagerScreen> {
               padding: const EdgeInsets.all(10),
               children: [
                 _buildGridItem(context, Icons.person, 'User', '/user_manager'),
-                _buildGridItem(context, Icons.book, 'Product', null),
+                _buildGridItem(context, Icons.book, 'Product', '/product_manager'),
                 // _buildGridItem(context, Icons.person_outline, 'Author', null),
                 _buildGridItem(
                     context, Icons.library_books, 'Publisher', '/publisher'),
-                _buildGridItem(
-                    context, Icons.shopping_cart, 'Order', '/order_manager'),
-                _buildGridItem(context, Icons.category, 'Category',
-                    '/category'), // Điều hướng tới trang Category
+                _buildOrderGridItem(context),
+                _buildGridItem(context, Icons.category, 'Category', '/category'),
               ],
             ),
           ),
@@ -152,7 +150,7 @@ class _ManagerScreenState extends State<ManagerScreen> {
             isLoading
                 ? const CircularProgressIndicator() // Hiển thị loader khi đang tải
                 : Text(
-                    '$uncheckedOrdersCount unchecked',
+                    '$uncheckedOrdersCount new Order',
                     style: const TextStyle(
                       fontSize: 12,
                       color: Colors.redAccent,
