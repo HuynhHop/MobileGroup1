@@ -43,6 +43,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (response.statusCode == 200) {
         await storage.write(key: "accessToken", value: data["accessToken"]);
+        await storage.write(key: "userData", value: json.encode(data["userData"]));
         String accessToken = data["accessToken"];
         Map<String, dynamic> decodedToken = JwtDecoder.decode(accessToken);
 

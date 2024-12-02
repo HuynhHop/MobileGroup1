@@ -16,6 +16,32 @@ class _ManagerOrderScreen extends State<ManagerOrderScreen> {
   final storage = FlutterSecureStorage();
   final apiUrl = dotenv.env['API_URL'];
 
+  @override
+    void initState() {
+      super.initState();
+      updateUncheckedOrders(); // Gọi API để cập nhật các đơn hàng unchecked
+  }
+/// Gọi API để cập nhật tất cả các đơn hàng có `isChecked = false`
+  Future<void> updateUncheckedOrders() async {
+    try {
+      final token = await storage.read(key: "accessToken");
+      final response = await http.put(
+        Uri.parse('$apiUrl/order/checkAllOrders'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      if (response.statusCode == 200) {
+        print("Unchecked orders updated successfully");
+      } else {
+        print("Failed to update unchecked orders: ${response.body}");
+      }
+    } catch (error) {
+      print("Error updating unchecked orders: $error");
+    }
+  }
+
   Future<List<Order>> fetchOrders(String status) async {
     final token = await storage.read(key: "accessToken"); // Lấy token từ bộ nhớ
     final response = await http.get(

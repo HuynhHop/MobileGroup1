@@ -13,9 +13,10 @@ import { useFocusEffect } from "@react-navigation/native";
 const OrderScreen = ({ navigation }) => {
   const { user } = useAuth();
   const [orders, setOrders] = useState([]);
-  const [selectedStatus, setSelectedStatus] = useState('Pending');
+  const [selectedStatus, setSelectedStatus] = useState("Pending");
   const API_URL = process.env.API_URL;
-  
+  console.log("Order Screen");
+
   const fetchOrders = async () => {
     const accessToken = await AsyncStorage.getItem("@accessToken");
     try {
@@ -59,15 +60,17 @@ const OrderScreen = ({ navigation }) => {
           Authorization: `Bearer ${accessToken}`,
         },
       });
-  
+
       const data = await response.json();
-  
+
       if (!response.ok) {
         throw new Error(data.message || "Failed to cancel order");
       }
-  
+
       if (data.success) {
-        setOrders((prevOrders) => prevOrders.filter(order => order._id !== orderId));
+        setOrders((prevOrders) =>
+          prevOrders.filter((order) => order._id !== orderId)
+        );
         alert("Order deleted successfully.");
       } else {
         alert(data.message || "Failed to cancel order");
@@ -86,21 +89,24 @@ const OrderScreen = ({ navigation }) => {
   const handleConfirmDelivery = async (orderId) => {
     const accessToken = await AsyncStorage.getItem("@accessToken");
     try {
-      const response = await fetch(`${API_URL}/order/updateIsDelivered/${orderId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({ isDelivered: true }),
-      });
-  
+      const response = await fetch(
+        `${API_URL}/order/updateIsDelivered/${orderId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({ isDelivered: true }),
+        }
+      );
+
       const data = await response.json();
-  
+
       if (!response.ok) {
         throw new Error(data.message || "Failed to update order status");
       }
-  
+
       if (data.success) {
         setOrders((prevOrders) =>
           prevOrders.map((order) =>
@@ -118,7 +124,7 @@ const OrderScreen = ({ navigation }) => {
   };
 
   const renderOrdersByStatus = (status) => {
-    const filteredOrders = orders.filter(order => order.status === status);
+    const filteredOrders = orders.filter((order) => order.status === status);
     return (
       <View style={styles.statusSection}>
         <Text style={styles.statusTitle}>{status}</Text>
@@ -134,7 +140,9 @@ const OrderScreen = ({ navigation }) => {
 
               {order.details.map((detail) => (
                 <View key={detail._id} style={styles.productDetail}>
-                  <Text style={styles.productName}>Product Name: {detail.productName}</Text>
+                  <Text style={styles.productName}>
+                    Product Name: {detail.productName}
+                  </Text>
                   <Text>Price: ${detail.productPrice.toFixed(2)}</Text>
                   <Text>Quantity: {detail.quantity}</Text>
                 </View>
@@ -144,13 +152,18 @@ const OrderScreen = ({ navigation }) => {
                 {/* Detail Button */}
                 <TouchableOpacity
                   style={styles.detailButton}
-                  onPress={() => navigation.navigate('OrderDetail', { orderId: order._id, totalPrice: order.totalPrice })}
+                  onPress={() =>
+                    navigation.navigate("OrderDetail", {
+                      orderId: order._id,
+                      totalPrice: order.totalPrice,
+                    })
+                  }
                 >
                   <Text style={styles.buttonText}>Detail</Text>
                 </TouchableOpacity>
 
                 {/* Conditional Buttons */}
-                {status === 'Pending' && (
+                {status === "Pending" && (
                   <TouchableOpacity
                     style={styles.cancelButton}
                     onPress={() => handleCancelOrder(order._id)}
@@ -159,7 +172,7 @@ const OrderScreen = ({ navigation }) => {
                   </TouchableOpacity>
                 )}
 
-                {status === 'Cancelled' && (
+                {status === "Cancelled" && (
                   <TouchableOpacity
                     style={styles.restoreButton}
                     onPress={() => handleRestoreOrder(order._id)}
@@ -168,14 +181,14 @@ const OrderScreen = ({ navigation }) => {
                   </TouchableOpacity>
                 )}
 
-              {status === 'Transported' && !order.isDelivered && (
-                <TouchableOpacity
-                  style={styles.confirmButton}
-                  onPress={() => handleConfirmDelivery(order._id)}
-                >
-                  <Text style={styles.buttonText}>Confirm</Text>
-                </TouchableOpacity>
-              )}
+                {status === "Transported" && !order.isDelivered && (
+                  <TouchableOpacity
+                    style={styles.confirmButton}
+                    onPress={() => handleConfirmDelivery(order._id)}
+                  >
+                    <Text style={styles.buttonText}>Confirm</Text>
+                  </TouchableOpacity>
+                )}
               </View>
             </View>
           ))
@@ -189,13 +202,21 @@ const OrderScreen = ({ navigation }) => {
       <ScrollView>
         {/* Render order status buttons */}
         <View style={styles.statusButtonContainer}>
-          {['Pending', 'Shipping', 'Transported', 'Cancelled'].map((status) => (
+          {["Pending", "Shipping", "Transported", "Cancelled"].map((status) => (
             <TouchableOpacity
               key={status}
               onPress={() => setSelectedStatus(status)}
-              style={[styles.statusButton, selectedStatus === status && styles.selectedStatusButton]}
+              style={[
+                styles.statusButton,
+                selectedStatus === status && styles.selectedStatusButton,
+              ]}
             >
-              <Text style={[styles.statusButtonText, selectedStatus === status && styles.selectedText]}>
+              <Text
+                style={[
+                  styles.statusButtonText,
+                  selectedStatus === status && styles.selectedText,
+                ]}
+              >
                 {status}
               </Text>
             </TouchableOpacity>
@@ -228,14 +249,14 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
   selectedStatusButton: {
-    backgroundColor: "#38a169", 
+    backgroundColor: "#38a169",
   },
   statusButtonText: {
     color: "#333",
     fontWeight: "600",
   },
   selectedText: {
-    color: "#fff", 
+    color: "#fff",
   },
   statusSection: {
     marginBottom: 20,

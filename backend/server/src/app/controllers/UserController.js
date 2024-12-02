@@ -14,6 +14,70 @@ const {
 const { sendMail } = require("../../util/sendMail");
 const Member = require("../models/Member");
 class UserController {
+  // [PUT] /user/checkAll
+  async checkAllUsers(req, res) {
+    try {
+      // Cập nhật tất cả người dùng, đặt isChecked thành true
+      const result = await User.updateMany(
+        { isChecked: false }, // Điều kiện: chỉ cập nhật những user chưa checked
+        { $set: { isChecked: true } } // Đặt isChecked thành true
+      );
+
+      if (result.modifiedCount === 0) {
+        return res.status(404).json({
+          success: false,
+          message: "No users found to check",
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        message: `${result.modifiedCount} users were successfully checked.`,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: "Failed to check all users",
+        error: error.message,
+      });
+    }
+  }
+
+  // [PUT] /user/updateIsChecked/:id
+  async updateUserIsChecked(req, res) {
+    try {
+      const { id } = req.params; // Lấy user ID từ params
+
+      // Tìm user theo ID
+      const user = await User.findById(id);
+
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: "User not found",
+        });
+      }
+
+      // Cập nhật trạng thái isChecked
+      user.isChecked = true;
+
+      // Lưu thay đổi vào cơ sở dữ liệu
+      await user.save();
+
+      res.status(200).json({
+        success: true,
+        message: "User isChecked status updated successfully",
+        user,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: "Failed to update isChecked status",
+        error: error.message,
+      });
+    }
+  }
+  
   //[GET] /user/:id
   async getById(req, res) {
     try {
@@ -158,7 +222,7 @@ class UserController {
       });
     }
   }
-  
+
   // [POST] /user/register
   async register(req, res) {
     try {
@@ -232,6 +296,71 @@ class UserController {
       });
     }
   }
+
+  // [PUT] /user/checkAll
+  async checkAllUsers(req, res) {
+    try {
+      // Cập nhật tất cả người dùng, đặt isChecked thành true
+      const result = await User.updateMany(
+        { isChecked: false }, // Điều kiện: chỉ cập nhật những user chưa checked
+        { $set: { isChecked: true } } // Đặt isChecked thành true
+      );
+
+      if (result.modifiedCount === 0) {
+        return res.status(404).json({
+          success: false,
+          message: "No users found to check",
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        message: `${result.modifiedCount} users were successfully checked.`,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: "Failed to check all users",
+        error: error.message,
+      });
+    }
+  }
+
+  // [PUT] /user/updateIsChecked/:id
+  async updateUserIsChecked(req, res) {
+    try {
+      const { id } = req.params; // Lấy user ID từ params
+
+      // Tìm user theo ID
+      const user = await User.findById(id);
+
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: "User not found",
+        });
+      }
+
+      // Cập nhật trạng thái isChecked
+      user.isChecked = true;
+
+      // Lưu thay đổi vào cơ sở dữ liệu
+      await user.save();
+
+      res.status(200).json({
+        success: true,
+        message: "User isChecked status updated successfully",
+        user,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: "Failed to update isChecked status",
+        error: error.message,
+      });
+    }
+  }
+
   //[PUT] /user/:uid
   async updateByAdmin(req, res, next) {
     try {
